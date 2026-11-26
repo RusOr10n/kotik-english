@@ -61,6 +61,8 @@ type Actions = {
   addCustomTheme(theme: CustomTheme): void;
   removeCustomTheme(id: string): void;
   buy(id: string, price: number): boolean;
+  /** родитель начисляет монетки (возвращает, сколько реально начислено) */
+  grantCoins(amount: number): number;
   toggleEquip(slot: Slot, id: string): void;
   updateSettings(patch: Partial<Settings>): void;
   saveSession(key: string, session: SavedSession): void;
@@ -69,6 +71,9 @@ type Actions = {
 };
 
 export type GameState = Data & Actions;
+
+/** Больше за один раз начислить нельзя — защита от опечатки «1000000» */
+export const MAX_GRANT = 1000;
 
 const initial: Data = {
   profile: null,
@@ -158,6 +163,12 @@ export const useGame = create<GameState>()(
         if (s.owned.includes(id) || s.coins < price) return false;
         set({ coins: s.coins - price, owned: [...s.owned, id] });
         return true;
+      },
+
+      grantCoins(amount) {
+        const add = Math.max(0, Math.min(MAX_GRANT, Math.floor(Number(amount) || 0)));
+        if (add > 0) set({ coins: get().coins + add });
+        return add;
       },
 
       toggleEquip(slot, id) {

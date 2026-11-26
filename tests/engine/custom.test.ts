@@ -127,3 +127,17 @@ describe('shop catalog', () => {
     }
   });
 });
+
+describe('начисление монеток родителем', () => {
+  it('добавляет монетки, отбрасывает мусор и ограничивает разовую сумму', async () => {
+    const { MAX_GRANT } = await import('../../src/state/store');
+    useGame.getState().reset();
+    expect(useGame.getState().grantCoins(50)).toBe(50);
+    expect(useGame.getState().coins).toBe(50);
+    expect(useGame.getState().grantCoins(-20)).toBe(0);
+    expect(useGame.getState().grantCoins(Number.NaN)).toBe(0);
+    expect(useGame.getState().grantCoins(12.7)).toBe(12);
+    expect(useGame.getState().grantCoins(999999)).toBe(MAX_GRANT);
+    expect(useGame.getState().coins).toBe(50 + 12 + MAX_GRANT);
+  });
+});

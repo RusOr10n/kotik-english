@@ -3,6 +3,7 @@ import { WithIcon } from '../components/ui/Icon';
 import { englishVoices, speak } from '../audio/speech';
 import { getWord, hasWord } from '../content/words';
 import { CustomThemesPanel } from './CustomThemesPanel';
+import { GrantCoins } from './GrantCoins';
 import { ImportProgress } from './ImportProgress';
 import { TransferPanel } from './TransferPanel';
 import { ALL_LESSONS, WORLDS } from '../content/worlds';
@@ -54,6 +55,8 @@ export function ParentScreen({ nav }: { nav: Nav }) {
           {stat('занятий', state.sessions)}
           {stat('дней подряд', state.streak.count)}
         </div>
+
+        <GrantCoins />
 
         <CustomThemesPanel nav={nav} />
 
