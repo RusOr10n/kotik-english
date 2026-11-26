@@ -42,26 +42,44 @@ export function configureSpeech(opts: { rate?: number; voiceName?: string | null
   }
 }
 
+/** Номер последней просьбы что-то сказать: устаревшие просьбы молча отбрасываются */
+let speechToken = 0;
+
+/**
+ * Говорит фразу, обрывая то, что звучало до этого.
+ * Safari и Chrome, если вызвать speak() сразу после cancel(), часто договаривают
+ * старую фразу или теряют новую — поэтому, когда что-то уже звучит, новая фраза
+ * стартует после короткой паузы. Если синтезатор молчит, говорим сразу: iOS
+ * разрешает первую речь только прямо внутри тапа.
+ */
 export function speak(text: string, opts: { slow?: boolean } = {}): Promise<void> {
   const s = synth();
   if (!s) return Promise.resolve();
   if (!cachedVoice) cachedVoice = chooseVoice();
+  const token = ++speechToken;
+  const busy = s.speaking || s.pending;
   s.cancel();
   return new Promise((resolve) => {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = cachedVoice?.lang ?? 'en-US';
-    if (cachedVoice) u.voice = cachedVoice;
-    u.rate = opts.slow ? rate * 0.7 : rate;
-    u.pitch = 1.1;
-    u.onend = () => resolve();
-    u.onerror = () => resolve();
-    s.speak(u);
-    // страховка: некоторые браузеры не присылают onend
-    setTimeout(resolve, 4000);
+    const start = () => {
+      if (token !== speechToken) return resolve();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = cachedVoice?.lang ?? 'en-US';
+      if (cachedVoice) u.voice = cachedVoice;
+      u.rate = opts.slow ? rate * 0.7 : rate;
+      u.pitch = 1.1;
+      u.onend = () => resolve();
+      u.onerror = () => resolve();
+      s.speak(u);
+      // страховка: некоторые браузеры не присылают onend
+      setTimeout(resolve, 4000);
+    };
+    if (busy) setTimeout(start, 80);
+    else start();
   });
 }
 
 export function stopSpeech() {
+  speechToken++;
   synth()?.cancel();
 }
 

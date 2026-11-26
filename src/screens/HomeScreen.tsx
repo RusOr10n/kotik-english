@@ -10,6 +10,7 @@ import { Coins } from '../components/ui/Coins';
 import { Icon, WithIcon } from '../components/ui/Icon';
 import { useIsMobile } from '../components/ui/useIsMobile';
 import { HOME_ITEMS, ROOMS, ROOM_BY_ID, roomOf, type HomeItem, type RoomId } from '../content/home';
+import { randomCatPhrase } from '../content/catPhrases';
 import type { Phrase } from '../content/types';
 import { isRoomUnlocked, passedWorldsCount } from '../state/progress';
 import { useGame } from '../state/store';
@@ -123,8 +124,21 @@ export function HomeScreen({ nav, initialRoom }: { nav: Nav; initialRoom?: RoomI
   };
 
   const say = (phrase: Phrase) => {
+    clearTimeout(tapBubbleTimer.current);
     setBubble(phrase);
     void speak(phrase.en);
+  };
+
+  /** Фраза на тап по котику: облачко живёт 2.5 с от последнего тапа, а не от первого */
+  const tapBubbleTimer = useRef<ReturnType<typeof setTimeout>>();
+  const lastTapPhrase = useRef<Phrase | null>(null);
+  const sayOnTap = (phrase: Phrase, { voice = true } = {}) => {
+    if (voice) say(phrase);
+    else {
+      clearTimeout(tapBubbleTimer.current);
+      setBubble(phrase);
+    }
+    tapBubbleTimer.current = setTimeout(() => alive.current && setBubble(null), 2500);
   };
 
   const effect = (id: string, kind: Fx['kind']) => setFx({ id, kind, n: Date.now() });
@@ -464,13 +478,11 @@ export function HomeScreen({ nav, initialRoom }: { nav: Nav; initialRoom?: RoomI
                 onTap={() => {
                   if (busy) return;
                   sfx.meow();
-                  say({ en: 'Meow! I love my home!', ru: 'Мяу! Я люблю свой домик!' });
-                  setTimeout(() => alive.current && setBubble(null), 2500);
+                  lastTapPhrase.current = randomCatPhrase(lastTapPhrase.current);
+                  sayOnTap(lastTapPhrase.current);
                 }}
-                onSixSeven={() => {
-                  setBubble({ en: 'Six seven!', ru: 'Шесть-семь!' });
-                  setTimeout(() => alive.current && setBubble(null), 2500);
-                }}
+                // вслух «six seven» говорит сам котик, здесь только облачко
+                onSixSeven={() => sayOnTap({ en: 'Six seven!', ru: 'Шесть-семь!' }, { voice: false })}
               />
             </div>
           </motion.div>
