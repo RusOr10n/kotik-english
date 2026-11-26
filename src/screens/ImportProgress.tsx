@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { WithIcon } from '../components/ui/Icon';
 import { STORAGE_KEY } from '../state/storageKey';
 import { APPLIED_KEY, describeSave, extractPayload } from '../transfer/transfer';
 
@@ -16,7 +17,7 @@ export function ImportProgress() {
     }
     const info = describeSave(payload.save);
     const what = payload.withProgress
-      ? `котик «${info.catName ?? '—'}», ${info.coins} 🪙, уроков пройдено: ${info.lessons}`
+      ? `котик «${info.catName ?? '—'}», монеток: ${info.coins}, уроков пройдено: ${info.lessons}`
       : 'новая игра (без прогресса)';
     if (!window.confirm(`Загрузить из файла: ${what}?\nТекущий прогресс на этом устройстве будет заменён.`)) return;
     try {
@@ -31,7 +32,9 @@ export function ImportProgress() {
 
   return (
     <div className="card col gap-12" style={{ padding: 20 }}>
-      <h3>📥 Загрузить прогресс из файла</h3>
+      <h3>
+        <WithIcon icon="import" size={26}>Загрузить прогресс из файла</WithIcon>
+      </h3>
       <span className="muted" style={{ fontWeight: 700 }}>
         Выберите файл <b>kotik-english.html</b>, созданный кнопкой «Подготовить перенос» на другом устройстве. Удобно, чтобы перенести прогресс на телефон.
       </span>

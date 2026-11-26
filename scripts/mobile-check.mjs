@@ -132,7 +132,7 @@ async function main() {
     await page.waitForTimeout(400);
     await shot('map-home-bottom');
     await open('#/map/12');
-    await shot('map-far-world-strip');
+    await shot('map-far-world');
     await open('#/map/1');
     await shot('map-grammar');
     await click('Правила');

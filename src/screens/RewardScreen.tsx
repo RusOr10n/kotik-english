@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { speak } from '../audio/speech';
 import { sfx } from '../audio/sfx';
 import { MyCat } from '../components/cat/MyCat';
+import { Coin, WithIcon } from '../components/ui/Icon';
 import { celebrate } from '../components/ui/confetti';
 import { praiseEn } from '../components/ui/praise';
 import { Stars } from '../components/ui/Stars';
@@ -52,7 +53,7 @@ export function RewardScreen({ title, stars, coins, bonus = 0, streak = 1, messa
         <MyCat mood="happy" size={mobile ? 140 : 200} />
         {message && <div className="subtitle" style={{ maxWidth: 520, textAlign: 'center' }}>{message}</div>}
         <motion.div className="pill" style={{ fontSize: 30, padding: '10px 26px' }} initial={{ scale: 0 }} animate={{ scale: [0, 1.3, 1] }} transition={{ delay: 1.5 }}>
-          <span className="pic">🪙</span> +{coins}
+          <Coin size={34} /> +{coins}
         </motion.div>
         {bonus > 0 && (
           <motion.div
@@ -65,7 +66,9 @@ export function RewardScreen({ title, stars, coins, bonus = 0, streak = 1, messa
           >
             <span className="pic" style={{ fontSize: 34 }}>🎁</span>
             <div className="col">
-              <b style={{ fontSize: 20 }}>Ежедневный бонус: +{bonus} 🪙</b>
+              <b style={{ fontSize: 20 }}>
+                Ежедневный бонус: +{bonus} <Coin size={22} />
+              </b>
               <span className="muted" style={{ fontWeight: 700 }}>
                 {streak > 1 ? `${streak} дн. подряд! Завтра бонус будет ещё больше` : 'Приходи завтра — бонус вырастет!'}
               </span>
@@ -75,7 +78,7 @@ export function RewardScreen({ title, stars, coins, bonus = 0, streak = 1, messa
         <div className="row gap-16" style={{ marginTop: 10 }}>
           {onRetry && (
             <button className="btn white" onClick={onRetry}>
-              🔁 Ещё раз
+              <WithIcon icon="review" size={22}>Ещё раз</WithIcon>
             </button>
           )}
           <button className="btn good" onClick={onMap}>

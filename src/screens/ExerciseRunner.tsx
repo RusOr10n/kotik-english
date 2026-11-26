@@ -14,7 +14,7 @@ import { type SavedSession, useGame } from '../state/store';
 import { IntroCards } from './IntroCards';
 
 type Props = {
-  title: string;
+  title: React.ReactNode;
   background: string;
   /** ключ для сохранения незаконченного задания */
   sessionKey: string;
@@ -88,6 +88,8 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
   const ex = queue[index];
 
   const handleDone = (result: ExerciseResult) => {
+    // закрываем клавиатуру телефона, чтобы она не закрыла кнопку «Понятно»
+    (document.activeElement as HTMLElement | null)?.blur?.();
     const selfCorrecting = SELF_CORRECTING.includes(ex.kind);
     const correct = selfCorrecting || result.correct;
     if (ex.kind !== 'memory' && ex.kind !== 'catchFish' && ex.kind !== 'balloons') ex.wordIds.forEach((id) => recordWord(id, result.correct));
@@ -155,7 +157,7 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
       {phase === 'intro' && intro ? (
         <IntroCards words={intro} rule={rule} startIndex={introIndex} onIndexChange={setIntroIndex} onDone={() => setPhase('play')} />
       ) : (
-        <div className="grow scroll" style={{ display: 'flex', flexDirection: 'column', paddingBottom: feedback ? 150 : mobile ? 16 : 110 }}>
+        <div className="grow scroll" style={{ display: 'flex', flexDirection: 'column', paddingBottom: mobile ? 12 : feedback ? 24 : 110 }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={ex.id}
@@ -186,7 +188,7 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
             animate={{ y: 0 }}
             exit={{ y: 140 }}
             transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-            style={{ paddingLeft: 150, paddingBottom: 'max(22px, env(safe-area-inset-bottom))' }}
+            style={{ paddingLeft: mobile ? undefined : 150, paddingBottom: 'max(22px, env(safe-area-inset-bottom))' }}
           >
             <div className="col grow">
               <span>{feedback.text}</span>

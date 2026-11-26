@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { WithIcon } from '../components/ui/Icon';
 import { hasWord } from '../content/words';
 import { buildReview } from '../engine/lessonBuilder';
 import { dayNumber, wordsForReview } from '../engine/srs';
@@ -25,7 +26,7 @@ export function ReviewPlay({ nav }: { nav: Nav }) {
 
   return (
     <ExerciseRunner
-      title="🔁 Повторение"
+      title={<WithIcon icon="review" size={24}>Повторение</WithIcon>}
       background="linear-gradient(160deg, #e9f7ff 0%, #f3e8ff 100%)"
       sessionKey="review"
       exercises={exercises}

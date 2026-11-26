@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { platform, promptInstall, useInstallState } from '../../pwa/install';
+import { Icon } from './Icon';
 import { useIsMobile } from './useIsMobile';
 
 /** Кнопка «Добавить на главный экран» — только на телефоне и если игра ещё не установлена */
@@ -20,8 +21,8 @@ export function InstallButton() {
 
   return (
     <>
-      <button className="btn white icon" title="Добавить на главный экран" onClick={() => void onClick()}>
-        📲
+      <button className="btn white small menu-btn" title="Добавить на главный экран" onClick={() => void onClick()}>
+        <Icon name="install" />
       </button>
       <AnimatePresence>
         {help && (
@@ -34,11 +35,13 @@ export function InstallButton() {
             onClick={() => setHelp(false)}
           >
             <motion.div className="card col gap-12" style={{ padding: 22, width: 420, maxWidth: '100%' }} initial={{ scale: 0.8 }} animate={{ scale: 1 }} onClick={(e) => e.stopPropagation()}>
-              <h2 style={{ fontSize: 22 }}>📲 Добавить игру на главный экран</h2>
+              <h2 className="row gap-8" style={{ fontSize: 22 }}>
+                <Icon name="install" size={28} /> Добавить игру на главный экран
+              </h2>
               {isFile ? (
                 <div className="col gap-8" style={{ fontWeight: 700 }}>
                   <span>Игра открыта из скачанного файла — для таких страниц Chrome не умеет добавлять значок на главный экран.</span>
-                  <span>Попросите взрослого выложить игру в интернет (по https-ссылке) и открыть эту ссылку в Chrome — тогда кнопка 📲 сработает.</span>
+                  <span>Попросите взрослого выложить игру в интернет (по https-ссылке) и открыть эту ссылку в Chrome — тогда кнопка «На главный экран» сработает.</span>
                   <span className="muted">Подробно — в файле README.md, раздел «Телефон (Android)».</span>
                 </div>
               ) : os === 'ios' ? (

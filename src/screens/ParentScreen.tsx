@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { WithIcon } from '../components/ui/Icon';
 import { englishVoices, speak } from '../audio/speech';
 import { getWord, hasWord } from '../content/words';
 import { CustomThemesPanel } from './CustomThemesPanel';
@@ -39,7 +40,9 @@ export function ParentScreen({ nav }: { nav: Nav }) {
     <div className="screen" style={{ background: '#f4f2f8', userSelect: 'text' }}>
       <div className="topbar">
         <button className="btn white small" onClick={() => nav({ name: 'map' })}>← Карта</button>
-        <h1 style={{ fontSize: 28 }}>⚙️ Для родителей</h1>
+        <h1 style={{ fontSize: 28 }}>
+          <WithIcon icon="settings" size={30}>Для родителей</WithIcon>
+        </h1>
       </div>
       <div className="scroll grow col gap-24" style={{ padding: '0 clamp(10px, 3vw, 32px) 32px' }}>
         <div className="row gap-16" style={{ flexWrap: 'wrap' }}>

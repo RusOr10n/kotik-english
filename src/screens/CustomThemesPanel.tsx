@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { WithIcon } from '../components/ui/Icon';
 import { Pic } from '../components/ui/Pic';
 import {
   type CustomTheme,
@@ -82,7 +83,9 @@ export function CustomThemesPanel({ nav }: { nav: Nav }) {
 
   return (
     <div className="card col gap-16" style={{ padding: 20 }}>
-      <h3>📚 Свои темы и словари</h3>
+      <h3>
+        <WithIcon icon="themes" size={26}>Свои темы и словари</WithIcon>
+      </h3>
       <span className="muted" style={{ fontWeight: 700 }}>
         Добавьте слова, которые дочь проходит в школе. Из них получится новый уровень на карте с уроками, мини-играми и боссом. Такие уровни открыты сразу.
       </span>

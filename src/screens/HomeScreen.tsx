@@ -6,6 +6,7 @@ import type { CatMood } from '../components/cat/Cat';
 import { MyCat } from '../components/cat/MyCat';
 import { HomeItemArt } from '../components/home/HomeItemArt';
 import { Coins } from '../components/ui/Coins';
+import { Icon, WithIcon } from '../components/ui/Icon';
 import { useIsMobile } from '../components/ui/useIsMobile';
 import { HOME_ITEMS, type HomeItem } from '../content/home';
 import type { Phrase } from '../content/types';
@@ -272,11 +273,18 @@ export function HomeScreen({ nav }: { nav: Nav }) {
     <div className="screen">
       <div className="topbar" style={{ background: 'rgba(255,255,255,0.6)' }}>
         <button className="btn white small" onClick={() => nav({ name: 'map' })}>← Карта</button>
-        <h1 style={{ fontSize: mobile ? 20 : 28 }}>🏠 {mobile ? 'Домик' : `Домик: ${catName}`}</h1>
+        <h1 style={{ fontSize: mobile ? 20 : 28 }}>
+          <WithIcon icon="home" size={mobile ? 24 : 30}>{mobile ? 'Домик' : `Домик: ${catName}`}</WithIcon>
+        </h1>
         <div className="grow" />
         <Coins value={coins} />
-        <button className="btn white icon" title="Подсказка" onClick={() => setHint((h) => !h)}>💡</button>
-        <button className="btn small" onClick={() => nav({ name: 'shop', tab: 'interior' })}>🛍️<span className="hide-mobile"> Купить вещи</span></button>
+        <button className="btn white small menu-btn" title="Подсказка" onClick={() => setHint((h) => !h)}>
+          <Icon name="hint" />
+        </button>
+        <button className="btn white small menu-btn" title="Купить вещи" onClick={() => nav({ name: 'shop', tab: 'interior' })}>
+          <Icon name="shop" />
+          <span className="hide-mobile">Купить вещи</span>
+        </button>
       </div>
 
       <div ref={scroller} className="grow" style={{ position: 'relative', overflowX: mobile ? 'auto' : 'hidden', overflowY: 'hidden' }}>
@@ -321,7 +329,9 @@ export function HomeScreen({ nav }: { nav: Nav }) {
             <span className="muted" style={{ fontWeight: 700, textAlign: 'center', maxWidth: 360 }}>
               Купи в магазине мебель и игрушки — котик будет с ними играть и говорить по-английски!
             </span>
-            <button className="btn good" onClick={() => nav({ name: 'shop', tab: 'interior' })}>🛍️ В магазин</button>
+            <button className="btn good" onClick={() => nav({ name: 'shop', tab: 'interior' })}>
+              <WithIcon icon="shop" size={22} color="#fff">В магазин</WithIcon>
+            </button>
           </div>
         )}
 

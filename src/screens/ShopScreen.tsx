@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { sfx } from '../audio/sfx';
 import { Cat, type CatMood } from '../components/cat/Cat';
 import { Coins } from '../components/ui/Coins';
+import { Coin, WithIcon, type IconName } from '../components/ui/Icon';
 import { useIsMobile } from '../components/ui/useIsMobile';
 import { pawBurst } from '../components/ui/confetti';
 import { HomeItemArt } from '../components/home/HomeItemArt';
@@ -13,14 +14,14 @@ import type { Nav } from '../App';
 
 export type ShopTab = Slot | 'fur' | 'interior' | 'toy';
 type Tab = ShopTab;
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'interior', label: '🛋️ Интерьер' },
-  { id: 'toy', label: '🧸 Игрушки' },
-  { id: 'hat', label: '🎩 ' + SLOT_NAMES.hat },
-  { id: 'glasses', label: '👓 ' + SLOT_NAMES.glasses },
-  { id: 'neck', label: '🎀 ' + SLOT_NAMES.neck },
-  { id: 'back', label: '🦸 ' + SLOT_NAMES.back },
-  { id: 'fur', label: '🎨 Окраска' },
+const TABS: { id: Tab; icon: IconName; label: string }[] = [
+  { id: 'interior', icon: 'sofa', label: 'Интерьер' },
+  { id: 'toy', icon: 'toy', label: 'Игрушки' },
+  { id: 'hat', icon: 'hat', label: SLOT_NAMES.hat },
+  { id: 'glasses', icon: 'glasses', label: SLOT_NAMES.glasses },
+  { id: 'neck', icon: 'bow', label: SLOT_NAMES.neck },
+  { id: 'back', icon: 'cape', label: SLOT_NAMES.back },
+  { id: 'fur', icon: 'palette', label: 'Окраска' },
 ];
 
 export function ShopScreen({ nav, initialTab = 'hat' }: { nav: Nav; initialTab?: ShopTab }) {
@@ -48,7 +49,7 @@ export function ShopScreen({ nav, initialTab = 'hat' }: { nav: Nav; initialTab?:
     }
     if (coins < price) {
       sfx.wrong();
-      flash(`Нужно ещё ${price - coins} 🪙. Пройди уроки!`, 'sad');
+      flash(`Нужно ещё ${price - coins} ${coinsWord(price - coins)}. Пройди уроки!`, 'sad');
       return;
     }
     buy(id, price);
@@ -63,7 +64,9 @@ export function ShopScreen({ nav, initialTab = 'hat' }: { nav: Nav; initialTab?:
     <div className="screen" style={{ background: 'linear-gradient(160deg, #fff0f6 0%, #efe6ff 100%)' }}>
       <div className="topbar">
         <button className="btn white small" onClick={() => nav({ name: 'map' })}>← Карта</button>
-        <h1 style={{ fontSize: mobile ? 20 : 30 }}>🛍️ Магазин{mobile ? '' : ' котика'}</h1>
+        <h1 style={{ fontSize: mobile ? 20 : 30 }}>
+          <WithIcon icon="shop" size={mobile ? 24 : 32}>Магазин{mobile ? '' : ' котика'}</WithIcon>
+        </h1>
         <div className="grow" />
         <Coins value={coins} />
       </div>
@@ -89,7 +92,10 @@ export function ShopScreen({ nav, initialTab = 'hat' }: { nav: Nav; initialTab?:
           <div className="row gap-8" style={{ flexWrap: mobile ? 'nowrap' : 'wrap', overflowX: 'auto', paddingBottom: 6, flexShrink: 0 }}>
             {TABS.map((t) => (
               <button key={t.id} className={`btn small ${tab === t.id ? '' : 'white'}`} style={{ whiteSpace: 'nowrap', flexShrink: 0 }} onClick={() => setTab(t.id)}>
-                {t.label}
+                {/* на активной (розовой) вкладке иконка белая */}
+                <WithIcon icon={t.icon} size={20} color={tab === t.id ? '#fff' : undefined}>
+                  {t.label}
+                </WithIcon>
               </button>
             ))}
           </div>
@@ -160,7 +166,7 @@ function ShopCard(props: { name: string; active: boolean; price: number | null; 
       <b style={{ fontSize: 16, textAlign: 'center' }}>{props.name}</b>
       {props.price !== null ? (
         <span className="pill" style={{ fontSize: 17, background: props.canAfford ? '#fff4c4' : '#f1edf6', color: props.canAfford ? 'var(--ink)' : 'var(--ink-soft)' }}>
-          🪙 {props.price}
+          <Coin size={20} /> {props.price}
         </span>
       ) : (
         <span className="pill" style={{ fontSize: 15, background: props.active ? '#d9f8e6' : '#f1edf6' }}>
@@ -169,4 +175,12 @@ function ShopCard(props: { name: string; active: boolean; price: number | null; 
       )}
     </motion.button>
   );
+}
+
+function coinsWord(n: number) {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return 'монетка';
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'монетки';
+  return 'монеток';
 }

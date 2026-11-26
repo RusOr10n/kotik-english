@@ -1,6 +1,7 @@
 import { motion, useAnimation } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { sfx } from '../../audio/sfx';
+import { WithIcon } from './Icon';
 
 /** Простой «замок для взрослых»: пример на умножение двузначного числа */
 export function ParentGate({ onPass, onClose }: { onPass: () => void; onClose: () => void }) {
@@ -34,7 +35,9 @@ export function ParentGate({ onPass, onClose }: { onPass: () => void; onClose: (
         animate={{ scale: 1 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 style={{ fontSize: 26 }}>⚙️ Вход для родителей</h2>
+        <h2 style={{ fontSize: 26 }}>
+          <WithIcon icon="settings" size={28}>Вход для родителей</WithIcon>
+        </h2>
         <div className="subtitle" style={{ fontSize: 18, textAlign: 'center' }}>Решите пример, чтобы открыть настройки</div>
         <motion.div className="row gap-12" animate={shake}>
           <b style={{ fontSize: 34 }}>

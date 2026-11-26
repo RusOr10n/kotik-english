@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { speak } from '../audio/speech';
 import { Cat } from '../components/cat/Cat';
 import { Pic } from '../components/ui/Pic';
+import { WithIcon } from '../components/ui/Icon';
 import { useIsMobile } from '../components/ui/useIsMobile';
 import { getWord } from '../content/words';
 import { WORLDS } from '../content/worlds';
@@ -20,10 +21,16 @@ export function AlbumScreen({ nav }: { nav: Nav }) {
     <div className="screen" style={{ background: 'linear-gradient(160deg, #fffbe6 0%, #e6f6ff 100%)' }}>
       <div className="topbar">
         <button className="btn white small" onClick={() => nav({ name: 'map' })}>← Карта</button>
-        <h1 style={{ fontSize: mobile ? 20 : 30 }}>📖 Альбом</h1>
+        <h1 style={{ fontSize: mobile ? 20 : 30 }}>
+          <WithIcon icon="album" size={mobile ? 24 : 32}>Альбом</WithIcon>
+        </h1>
         <div className="grow" />
-        <button className={`btn small ${tab === 'friends' ? '' : 'white'}`} onClick={() => setTab('friends')}>🐱 Друзья</button>
-        <button className={`btn small ${tab === 'words' ? '' : 'white'}`} onClick={() => setTab('words')}>🔤 Словарик</button>
+        <button className={`btn small ${tab === 'friends' ? '' : 'white'}`} onClick={() => setTab('friends')}>
+          <WithIcon icon="cat" size={20} color={tab === 'friends' ? '#fff' : undefined}>Друзья</WithIcon>
+        </button>
+        <button className={`btn small ${tab === 'words' ? '' : 'white'}`} onClick={() => setTab('words')}>
+          <WithIcon icon="abc" size={20} color={tab === 'words' ? '#fff' : undefined}>Словарик</WithIcon>
+        </button>
       </div>
 
       {tab === 'friends' ? (

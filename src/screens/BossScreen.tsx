@@ -5,6 +5,7 @@ import { sfx } from '../audio/sfx';
 import { Cat, type CatMood } from '../components/cat/Cat';
 import { ExerciseView, answerOf } from '../components/exercises/ExerciseView';
 import { celebrate } from '../components/ui/confetti';
+import { Coin, WithIcon } from '../components/ui/Icon';
 import { Pic } from '../components/ui/Pic';
 import { comfort, praise } from '../components/ui/praise';
 import { useIsMobile } from '../components/ui/useIsMobile';
@@ -55,6 +56,7 @@ export function BossScreen({ worldId, nav }: { worldId: string; nav: Nav }) {
   };
 
   const handleDone = (result: ExerciseResult) => {
+    (document.activeElement as HTMLElement | null)?.blur?.();
     ex.wordIds.forEach((id) => recordWord(id, result.correct));
     const answer = answerOf(ex);
     if (result.correct) {
@@ -132,7 +134,11 @@ export function BossScreen({ worldId, nav }: { worldId: string; nav: Nav }) {
           <div className="row gap-16">
             <button className="btn white" onClick={() => nav({ name: 'map' })}>На карту</button>
             <button className="btn" onClick={phase === 'lose' ? restart : () => setPhase('fight')}>
-              {phase === 'lose' ? '🔁 Ещё раз' : '⚔️ В бой!'}
+              {phase === 'lose' ? (
+                <WithIcon icon="review" size={22} color="#fff">Ещё раз</WithIcon>
+              ) : (
+                <WithIcon icon="swords" size={22} color="#fff">В бой!</WithIcon>
+              )}
             </button>
           </div>
         </div>
@@ -153,10 +159,12 @@ export function BossScreen({ worldId, nav }: { worldId: string; nav: Nav }) {
               <Cat fur={world.friend.fur} accessories={world.friend.accessories} mood="happy" size={mobile ? 100 : 150} />
             </motion.div>
           </div>
-          <div className="pill" style={{ fontSize: 30 }}>🪙 +{reward.coins}</div>
+          <div className="pill" style={{ fontSize: 30 }}>
+            <Coin size={34} /> +{reward.coins}
+          </div>
           {reward.bonus > 0 && (
             <div className="pill" style={{ fontSize: 20, background: '#fff4c4' }}>
-              🎁 Ежедневный бонус: +{reward.bonus} 🪙 {reward.streak > 1 ? `(${reward.streak} дн. подряд)` : ''}
+              🎁 Ежедневный бонус: +{reward.bonus} <Coin size={20} /> {reward.streak > 1 ? `(${reward.streak} дн. подряд)` : ''}
             </div>
           )}
           <button
@@ -175,7 +183,7 @@ export function BossScreen({ worldId, nav }: { worldId: string; nav: Nav }) {
     <div className="screen" style={{ background: 'linear-gradient(180deg, #3b2e5a 0px, #6b3f7a 230px, #fff7ef 230px)' }}>
       <div className="topbar">
         <button className="btn white icon" onClick={() => nav({ name: 'map' })}>✕</button>
-        <span style={{ color: '#fff', fontWeight: 900, fontSize: mobile ? 16 : 20 }}>⚔️ {mobile ? boss.name : `Битва с боссом: ${boss.name}`}</span>
+        <span style={{ color: '#fff', fontWeight: 900, fontSize: mobile ? 16 : 20 }}><WithIcon icon="swords" size={mobile ? 20 : 24}>{mobile ? boss.name : `Битва с боссом: ${boss.name}`}</WithIcon></span>
       </div>
 
       {/* арена */}
@@ -219,7 +227,7 @@ export function BossScreen({ worldId, nav }: { worldId: string; nav: Nav }) {
         </AnimatePresence>
       </div>
 
-      <div className="grow scroll" style={{ display: 'flex', flexDirection: 'column', paddingBottom: 100, zoom: mobile ? 1 : 0.86 }}>
+      <div className="grow scroll" style={{ display: 'flex', flexDirection: 'column', paddingBottom: 16, zoom: mobile ? 1 : 0.86 }}>
         <AnimatePresence mode="wait">
           <motion.div key={`${attempt}-${q}`} className="exercise-wrap" style={{ margin: 'auto 0' }} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }}>
             <ExerciseView ex={ex} onDone={handleDone} />

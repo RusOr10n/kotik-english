@@ -1,11 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { speak } from '../audio/speech';
 import { sfx } from '../audio/sfx';
 import { MyCat } from '../components/cat/MyCat';
 import type { CatMood } from '../components/cat/Cat';
 import { Coins } from '../components/ui/Coins';
 import { ParentGate } from '../components/ui/ParentGate';
+import { Icon, WithIcon } from '../components/ui/Icon';
 import { InstallButton } from '../components/ui/InstallButton';
 import { Pic } from '../components/ui/Pic';
 import { RuleCard } from './RuleCard';
@@ -59,15 +60,7 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
   const [gate, setGate] = useState(false);
   const [showRules, setShowRules] = useState(false);
-  const strip = useRef<HTMLDivElement>(null);
 
-  // текущий мир — в центр полоски миров
-  useEffect(() => {
-    const el = strip.current;
-    const active = el?.querySelector<HTMLElement>('[data-active]');
-    if (!el || !active) return;
-    el.scrollTo({ left: active.offsetLeft - el.clientWidth / 2 + active.offsetWidth / 2, behavior: 'smooth' });
-  }, [worldIndex]);
   const hasRules = world.lessons.some((l) => l.rule?.length);
   const reviewWords = wordsForReview(state.srs, dayNumber(), 8);
   const dueCount = Object.values(state.srs).filter((p) => p.due <= dayNumber()).length;
@@ -133,22 +126,34 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
       </div>
 
       <div className="topbar">
-        <span className="pill" title="Дней подряд">🐾 {state.streak.count}<span className="hide-mobile"> {plural(state.streak.count, 'день', 'дня', 'дней')}</span></span>
+        <span className="pill" title="Дней подряд"><Icon name="paw" size={20} /> {state.streak.count}<span className="hide-mobile"> {plural(state.streak.count, 'день', 'дня', 'дней')}</span></span>
         <Coins value={state.coins} />
         <div className="grow" />
-        <button className="btn white small" onClick={() => nav({ name: 'review' })} disabled={!reviewWords.length && !state.savedSessions.review} style={{ position: 'relative' }}>
-          🔁<span className="hide-mobile"> {state.savedSessions.review ? 'Продолжить повторение' : 'Повторение'}</span>
+        <button className="btn white small menu-btn" onClick={() => nav({ name: 'review' })} title="Повторение" disabled={!reviewWords.length && !state.savedSessions.review} style={{ position: 'relative' }}>
+          <Icon name="review" />
+          <span className="hide-mobile">{state.savedSessions.review ? 'Продолжить повторение' : 'Повторение'}</span>
           {dueCount > 0 && (
             <span style={{ position: 'absolute', top: -8, right: -8, background: 'var(--bad)', color: '#fff', borderRadius: 12, padding: '2px 8px', fontSize: 14 }}>
               {dueCount}
             </span>
           )}
         </button>
-        <button className="btn white small" onClick={() => nav({ name: 'home' })} title="Домик">🏠<span className="hide-mobile"> Домик</span></button>
-        <button className="btn white small" onClick={() => nav({ name: 'shop' })} title="Магазин">🛍️<span className="hide-mobile"> Магазин</span></button>
-        <button className="btn white small" onClick={() => nav({ name: 'album' })} title="Альбом">📖<span className="hide-mobile"> Альбом</span></button>
+        <button className="btn white small menu-btn" onClick={() => nav({ name: 'home' })} title="Домик">
+          <Icon name="home" />
+          <span className="hide-mobile">Домик</span>
+        </button>
+        <button className="btn white small menu-btn" onClick={() => nav({ name: 'shop' })} title="Магазин">
+          <Icon name="shop" />
+          <span className="hide-mobile">Магазин</span>
+        </button>
+        <button className="btn white small menu-btn" onClick={() => nav({ name: 'album' })} title="Альбом">
+          <Icon name="album" />
+          <span className="hide-mobile">Альбом</span>
+        </button>
         <InstallButton />
-        <button className="btn white icon" onClick={() => setGate(true)} title="Для родителей">⚙️</button>
+        <button className="btn white small menu-btn" onClick={() => setGate(true)} title="Для родителей">
+          <Icon name="settings" />
+        </button>
       </div>
 
       {/* заголовок мира */}
@@ -165,7 +170,7 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
             </div>
             {hasRules && (
               <button className="btn white small" style={{ marginTop: 6 }} onClick={() => setShowRules(true)}>
-                📘 Правила
+                <WithIcon icon="rules" size={22}>Правила</WithIcon>
               </button>
             )}
           </motion.div>
@@ -178,37 +183,6 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
         >
           {worldIndex < WORLDS.length - 1 && !isWorldUnlocked(state, worldIndex + 1) ? '🔒' : '▶'}
         </button>
-      </div>
-
-      {/* быстрый выбор мира */}
-      <div ref={strip} className="world-strip" style={{ marginTop: 8 }}>
-        {WORLDS.map((w, i) => {
-          const open = isWorldUnlocked(state, i);
-          const active = i === worldIndex;
-          return (
-            <motion.button
-              key={w.id}
-              data-active={active || undefined}
-              title={open ? w.name : `${w.name} — пока закрыт`}
-              onClick={() => {
-                sfx.click();
-                setSelected(null);
-                nav({ name: 'map', worldIndex: i });
-              }}
-              whileHover={{ y: -3 }}
-              style={{
-                width: mobile ? 36 : 42, height: mobile ? 36 : 42, borderRadius: 12, cursor: 'pointer', fontSize: mobile ? 18 : 22, padding: 0,
-                border: active ? '3px solid var(--primary)' : w.custom ? '2px dashed #b9a6e8' : '2px solid transparent',
-                background: open ? '#fff' : 'rgba(255,255,255,0.5)', boxShadow: '0 3px 0 rgba(0,0,0,0.1)',
-                filter: open ? 'none' : 'grayscale(1) opacity(0.6)',
-                marginLeft: w.custom && !WORLDS[i - 1]?.custom ? 14 : undefined,
-                flexShrink: 0,
-              }}
-            >
-              <span className="pic">{w.pic}</span>
-            </motion.button>
-          );
-        })}
       </div>
 
       {/* тропинка */}
@@ -320,7 +294,7 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
               {world.lessons
                 .filter((l) => l.rule?.length)
                 .map((l) => (
-                  <RuleCard key={l.id} title={`📘 ${l.title}`} lines={l.rule!} />
+                  <RuleCard key={l.id} title={l.title} lines={l.rule!} />
                 ))}
               <button className="btn good" onClick={() => setShowRules(false)} style={{ alignSelf: 'center', flexShrink: 0 }}>
                 Понятно!
@@ -371,7 +345,7 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
                   <h2 style={{ fontSize: 30 }}>{world.boss.name}</h2>
                   <div className="subtitle" style={{ textAlign: 'center' }}>{world.boss.story}</div>
                   <button className="btn" onClick={() => nav({ name: 'boss', worldId: world.id })}>
-                    ⚔️ В бой!
+                    <WithIcon icon="swords" size={22} color="#fff">В бой!</WithIcon>
                   </button>
                 </>
               )}
@@ -406,7 +380,7 @@ function LessonActions({ lessonId, nav }: { lessonId: string; nav: Nav }) {
             nav({ name: 'lesson', lessonId });
           }}
         >
-          🔁 Начать заново
+          <WithIcon icon="review" size={20}>Начать заново</WithIcon>
         </button>
         <button className="btn good" onClick={() => nav({ name: 'lesson', lessonId })}>
           Продолжить ▶

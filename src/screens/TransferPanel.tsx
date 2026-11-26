@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
+import { Coin, WithIcon } from '../components/ui/Icon';
 import { STORAGE_KEY } from '../state/storageKey';
 import { useGame } from '../state/store';
 import { getPristineHtml } from '../transfer/boot';
@@ -63,12 +64,16 @@ export function TransferPanel() {
 
   return (
     <div className="card col gap-12" style={{ padding: 20 }}>
-      <h3>🚚 Перенос на другой компьютер</h3>
+      <h3>
+        <WithIcon icon="transfer" size={26}>Перенос на другой компьютер</WithIcon>
+      </h3>
       <span className="muted" style={{ fontWeight: 700 }}>
         Игра соберётся в один файл <b>{TRANSFER_FILE_NAME}</b>. На компьютере с Windows его достаточно открыть двойным щелчком — ничего устанавливать не нужно.
       </span>
       <div>
-        <button className="btn small" onClick={() => setStep('ask')}>🚚 Подготовить перенос</button>
+        <button className="btn small" onClick={() => setStep('ask')}>
+          <WithIcon icon="transfer" size={22} color="#fff">Подготовить перенос</WithIcon>
+        </button>
       </div>
 
       <AnimatePresence>
@@ -97,7 +102,7 @@ export function TransferPanel() {
                       <b>Да, перенести прогресс</b>
                       <span className="muted">
                         {info.catName ? `Котик «${info.catName}», ` : ''}
-                        {info.coins} 🪙, пройдено уроков: {info.lessons}, покупки, домик{info.themes ? `, свои темы: ${info.themes}` : ''}
+                        {info.coins} <Coin size={16} />, пройдено уроков: {info.lessons}, покупки, домик{info.themes ? `, свои темы: ${info.themes}` : ''}
                       </span>
                     </span>
                   </button>
@@ -134,7 +139,9 @@ export function TransferPanel() {
 
               {step === 'done' && (
                 <>
-                  <h2 style={{ fontSize: 26 }}>✅ Файл готов</h2>
+                  <h2 style={{ fontSize: 26 }}>
+                    <WithIcon icon="check" size={30}>Файл готов</WithIcon>
+                  </h2>
                   <span style={{ fontWeight: 700 }}>
                     Файл <b>{TRANSFER_FILE_NAME}</b> скачан в папку «Загрузки» {withProgress ? '— прогресс уже внутри.' : '— игра начнётся заново.'}
                   </span>

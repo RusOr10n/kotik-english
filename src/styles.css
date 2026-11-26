@@ -22,7 +22,7 @@
 * { box-sizing: border-box; }
 
 html, body, #root { margin: 0; height: 100%; }
-#root { height: 100dvh; }
+#root { height: 100dvh; height: var(--app-h, 100dvh); }
 
 body {
   background: var(--bg);
@@ -81,6 +81,10 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
 .btn.white { background: #fff; color: var(--ink); box-shadow: 0 6px 0 #e3dced; }
 .btn.small { font-size: 17px; padding: 10px 18px; border-radius: 14px; }
 .btn.icon { padding: 10px 14px; font-size: 24px; }
+
+/* Кнопки меню с нарисованными иконками */
+.menu-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: var(--ink); }
+.menu-btn svg { width: 24px; height: 24px; }
 
 .card {
   background: var(--card);
@@ -188,7 +192,8 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
 }
 
 .feedback {
-  position: absolute; left: 0; right: 0; bottom: 0;
+  /* часть экрана (не слой поверх): всегда видна внизу, задание над ней сжимается и прокручивается */
+  position: relative; flex-shrink: 0;
   padding: 22px 40px;
   display: flex; align-items: center; gap: 20px;
   font-size: 26px; font-weight: 900;
@@ -235,18 +240,6 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
 .steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-weight: 600; line-height: 1.4; }
 
 
-/* Полоска миров на карте: один ряд, листается вбок; если всё помещается — по центру */
-.world-strip {
-  position: relative; z-index: 2;
-  display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden;
-  padding: 4px 16px 10px; flex-shrink: 0;
-  scroll-snap-type: x proximity; scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
-}
-.world-strip > * { scroll-snap-align: center; }
-.world-strip > :first-child { margin-left: auto; }
-.world-strip > :last-child { margin-right: auto; }
-
 /* ---------- Сетки упражнений (общие классы) ---------- */
 .grid-pics { display: grid; grid-template-columns: repeat(4, 150px); gap: 18px; }
 .grid-pics > .option { height: 150px; }
@@ -268,6 +261,8 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
   .btn { font-size: 18px; padding: 11px 20px; border-radius: 15px; }
   .btn.small { font-size: 15px; padding: 8px 12px; }
   .btn.icon { padding: 8px 11px; font-size: 20px; }
+  .menu-btn { width: 44px; height: 44px; padding: 0 !important; border-radius: 14px !important; }
+  .menu-btn svg { width: 26px; height: 26px; }
   .pill { font-size: 16px; padding: 6px 12px; }
   .topbar { padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
   .bubble { font-size: 16px; padding: 10px 14px; }
@@ -297,8 +292,10 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
   /* на телефоне задание занимает всю ширину, чтобы сетки ответов могли растянуться */
   .exercise-wrap > * { width: 100%; }
 
-  .feedback { padding: 12px 14px max(12px, env(safe-area-inset-bottom)) 14px !important; font-size: 18px; gap: 10px; }
-  .feedback .btn { padding: 10px 14px; }
+  .feedback { padding: 12px 14px max(12px, env(safe-area-inset-bottom)) 14px !important; font-size: 18px; gap: 10px; flex-wrap: wrap; }
+  /* на телефоне: текст сверху, кнопка — отдельной строкой на всю ширину */
+  .feedback > .col { flex: 1 1 100%; min-width: 0; overflow-wrap: anywhere; }
+  .feedback .btn { width: 100%; padding: 12px 14px; }
   .runner-cat { transform: scale(0.6); transform-origin: bottom left; }
 
   .choice { padding: 10px 12px; gap: 10px; }

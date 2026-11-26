@@ -53,7 +53,7 @@ export function IntroCards({ words, rule, startIndex = 0, onIndexChange, onDone 
       </div>
       <div className="row gap-24" style={{ alignItems: 'flex-end', width: '100%', justifyContent: 'center' }}>
         <div className="col center gap-8 hide-mobile">
-          <div className="bubble">{word ? 'Новое слово! Послушай и повтори вслух 🗣️' : 'Сначала правило — оно короткое! 📘'}</div>
+          <div className="bubble">{word ? 'Новое слово! Послушай и повтори вслух 🗣️' : 'Сначала правило — оно короткое!'}</div>
           <MyCat mood={word ? 'happy' : 'think'} size={150} />
         </div>
         <AnimatePresence mode="wait">
