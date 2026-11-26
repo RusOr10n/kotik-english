@@ -7,16 +7,21 @@ import { Coin, Icon, WithIcon, type IconName } from '../components/ui/Icon';
 import { useIsMobile } from '../components/ui/useIsMobile';
 import { pawBurst } from '../components/ui/confetti';
 import { HomeItemArt } from '../components/home/HomeItemArt';
-import { HOME_ITEMS } from '../content/home';
+import { HOME_ITEMS, ROOM_BY_ID, roomOf, type HomeItem, type RoomId } from '../content/home';
 import { FURS, ITEMS, SLOT_NAMES, type Slot } from '../content/shop';
+import { isRoomUnlocked, passedWorldsCount } from '../state/progress';
 import { useGame } from '../state/store';
 import type { Nav } from '../App';
 
-export type ShopTab = Slot | 'fur' | 'interior' | 'toy';
+type ExtraRoom = Exclude<RoomId, 'living'>;
+export type ShopTab = Slot | 'fur' | 'interior' | 'toy' | ExtraRoom;
 type Tab = ShopTab;
-const TABS: { id: Tab; icon: IconName; label: string }[] = [
-  { id: 'interior', icon: 'sofa', label: 'Интерьер' },
+const TABS: ({ id: Tab; label: string } & ({ icon: IconName } | { room: ExtraRoom }))[] = [
+  { id: 'interior', icon: 'sofa', label: 'Гостиная' },
   { id: 'toy', icon: 'toy', label: 'Игрушки' },
+  { id: 'bathroom', room: 'bathroom', label: ROOM_BY_ID.bathroom.name },
+  { id: 'kitchen', room: 'kitchen', label: ROOM_BY_ID.kitchen.name },
+  { id: 'disco', room: 'disco', label: 'Диско' },
   { id: 'hat', icon: 'hat', label: SLOT_NAMES.hat },
   { id: 'glasses', icon: 'glasses', label: SLOT_NAMES.glasses },
   { id: 'neck', icon: 'bow', label: SLOT_NAMES.neck },
@@ -24,9 +29,19 @@ const TABS: { id: Tab; icon: IconName; label: string }[] = [
   { id: 'fur', icon: 'palette', label: 'Окраска' },
 ];
 
+const isRoomTab = (tab: Tab): tab is ExtraRoom => tab === 'bathroom' || tab === 'kitchen' || tab === 'disco';
+
+/** Вещи для домика на вкладке: гостиная (интерьер), игрушки или одна из новых комнат */
+function homeItemsFor(tab: 'interior' | 'toy' | ExtraRoom): HomeItem[] {
+  if (isRoomTab(tab)) return HOME_ITEMS.filter((i) => roomOf(i) === tab);
+  return HOME_ITEMS.filter((i) => roomOf(i) === 'living' && i.kind === tab);
+}
+
 export function ShopScreen({ nav, initialTab = 'hat' }: { nav: Nav; initialTab?: ShopTab }) {
-  const { profile, coins, owned, equipped, buy, toggleEquip, setFur } = useGame();
+  const { profile, coins, owned, equipped, buy, toggleEquip, setFur, bossDefeated, settings } = useGame();
   const [tab, setTab] = useState<Tab>(initialTab);
+  const roomOpen = (room: ExtraRoom) => isRoomUnlocked({ bossDefeated, settings, lessonStars: {} }, ROOM_BY_ID[room]);
+  const roomsLeft = (room: ExtraRoom) => ROOM_BY_ID[room].unlockAt - passedWorldsCount({ bossDefeated });
   const [mood, setMood] = useState<CatMood>('idle');
   const [message, setMessage] = useState<string | null>(null);
   const fur = profile?.fur ?? 'ginger';
@@ -96,17 +111,32 @@ export function ShopScreen({ nav, initialTab = 'hat' }: { nav: Nav; initialTab?:
           <div className="row gap-8" style={{ flexWrap: mobile ? 'nowrap' : 'wrap', overflowX: 'auto', paddingBottom: 6, flexShrink: 0 }}>
             {TABS.map((t) => (
               <button key={t.id} className={`btn small ${tab === t.id ? '' : 'white'}`} style={{ whiteSpace: 'nowrap', flexShrink: 0 }} onClick={() => setTab(t.id)}>
-                {/* на активной (розовой) вкладке иконка белая */}
-                <WithIcon icon={t.icon} size={20} color={tab === t.id ? '#fff' : undefined}>
-                  {t.label}
-                </WithIcon>
+                {'room' in t ? (
+                  <span>
+                    <span className="pic">{roomOpen(t.room) ? ROOM_BY_ID[t.room].pic : '🔒'}</span> {t.label}
+                  </span>
+                ) : (
+                  // на активной (розовой) вкладке иконка белая
+                  <WithIcon icon={t.icon} size={20} color={tab === t.id ? '#fff' : undefined}>
+                    {t.label}
+                  </WithIcon>
+                )}
               </button>
             ))}
           </div>
           <div className="scroll grow" style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${mobile ? 120 : 170}px, 1fr))`, gap: mobile ? 10 : 16, alignContent: 'start', padding: 4 }}>
-            {tab === 'interior' || tab === 'toy'
-              ? [...HOME_ITEMS.filter((i) => i.kind === tab)].sort((a, b) => a.price - b.price).map((item) => {
+            {isRoomTab(tab) && !roomOpen(tab) && (
+              <div className="card col center gap-8" style={{ gridColumn: '1 / -1', padding: 16, textAlign: 'center' }}>
+                <b style={{ fontSize: 20 }}>🔒 {ROOM_BY_ID[tab].name} пока закрыта</b>
+                <span className="muted" style={{ fontWeight: 700 }}>
+                  Она откроется в домике, когда пройдёшь {ROOM_BY_ID[tab].unlockAt} уровней. Осталось: {roomsLeft(tab)}. Тогда эти вещи можно будет купить!
+                </span>
+              </div>
+            )}
+            {tab === 'interior' || tab === 'toy' || isRoomTab(tab)
+              ? [...homeItemsFor(tab)].sort((a, b) => a.price - b.price).map((item) => {
                   const has = owned.includes(item.id);
+                  const locked = isRoomTab(tab) && !roomOpen(tab);
                   return (
                     <ShopCard
                       key={item.id}
@@ -114,8 +144,16 @@ export function ShopScreen({ nav, initialTab = 'hat' }: { nav: Nav; initialTab?:
                       active={has}
                       price={has ? null : item.price}
                       canAfford={coins >= item.price}
+                      locked={locked}
                       actionLabel="✓ В домике"
-                      onClick={() => (has ? nav({ name: 'home' }) : purchase(item.id, item.price, () => {}))}
+                      onClick={() => {
+                        if (locked) {
+                          sfx.wrong();
+                          const left = roomsLeft(tab as ExtraRoom);
+                          flash(`Пройди ещё ${left} ${levelsWord(left)} — и комната откроется!`, 'think');
+                        } else if (has) nav({ name: 'home', room: roomOf(item) });
+                        else purchase(item.id, item.price, () => {});
+                      }}
                     >
                       <div className="center" style={{ height: 100, width: '100%', overflow: 'hidden' }}>
                         <HomeItemArt item={item} scale={Math.min(1, 90 / item.size)} />
@@ -157,18 +195,22 @@ export function ShopScreen({ nav, initialTab = 'hat' }: { nav: Nav; initialTab?:
   );
 }
 
-function ShopCard(props: { name: string; active: boolean; price: number | null; canAfford: boolean; actionLabel: string; onClick: () => void; children: React.ReactNode }) {
+function ShopCard(props: { name: string; active: boolean; price: number | null; canAfford: boolean; locked?: boolean; actionLabel: string; onClick: () => void; children: React.ReactNode }) {
   return (
     <motion.button
       className="card col center"
-      style={{ border: props.active ? '4px solid var(--good)' : '4px solid transparent', padding: 12, gap: 6, cursor: 'pointer' }}
+      style={{ border: props.active ? '4px solid var(--good)' : '4px solid transparent', padding: 12, gap: 6, cursor: 'pointer', opacity: props.locked ? 0.55 : 1 }}
       whileHover={{ y: -6 }}
       whileTap={{ scale: 0.95 }}
       onClick={props.onClick}
     >
       {props.children}
       <b style={{ fontSize: 16, textAlign: 'center' }}>{props.name}</b>
-      {props.price !== null ? (
+      {props.locked ? (
+        <span className="pill" style={{ fontSize: 17, background: '#f1edf6', color: 'var(--ink-soft)' }}>
+          🔒 <Coin size={20} /> {props.price}
+        </span>
+      ) : props.price !== null ? (
         <span className="pill" style={{ fontSize: 17, background: props.canAfford ? '#fff4c4' : '#f1edf6', color: props.canAfford ? 'var(--ink)' : 'var(--ink-soft)' }}>
           <Coin size={20} /> {props.price}
         </span>
@@ -179,6 +221,14 @@ function ShopCard(props: { name: string; active: boolean; price: number | null; 
       )}
     </motion.button>
   );
+}
+
+function levelsWord(n: number) {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return 'уровень';
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'уровня';
+  return 'уровней';
 }
 
 function coinsWord(n: number) {

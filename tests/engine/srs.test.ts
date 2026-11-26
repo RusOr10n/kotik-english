@@ -72,3 +72,12 @@ describe('ошибки урока и звёзды', () => {
     expect(lesson([['type', false, 1], ['fillGap', false, 1], ['sentence', false, 1], ['catchFish', true, 2]])).toBe(1);
   });
 });
+
+describe('погода за окном домика', () => {
+  it('всегда меняется на другую', async () => {
+    const { pickNextWeather } = await import('../../src/components/home/HomeWindow');
+    for (const w of ['sunny', 'rainy', 'snowy', 'windy'] as const) {
+      for (const r of [0, 0.34, 0.67, 0.999]) expect(pickNextWeather(w, r)).not.toBe(w);
+    }
+  });
+});

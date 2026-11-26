@@ -25,6 +25,8 @@ export type Lesson = {
   minigame?: boolean;
   /** правило для грамматических уроков: строки «english — перевод» или пояснения */
   rule?: string[];
+  /** урок-повторение: слова уже знакомы, перед заданиями показываем только правило */
+  review?: boolean;
 };
 
 export type Boss = {

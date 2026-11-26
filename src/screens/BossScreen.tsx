@@ -13,6 +13,8 @@ import { useKeys } from '../components/ui/useKeys';
 import { WORLDS, findWorld, wordsUpToWorld, worldWords } from '../content/worlds';
 import type { ExerciseResult } from '../engine/exercises';
 import { buildBossQuestions } from '../engine/lessonBuilder';
+import type { Room } from '../content/home';
+import { passedWorldsCount, roomOpenedAt } from '../state/progress';
 import { useGame } from '../state/store';
 import type { Nav } from '../App';
 
@@ -36,7 +38,7 @@ export function BossScreen({ worldId, nav }: { worldId: string; nav: Nav }) {
   const [feedback, setFeedback] = useState<{ correct: boolean; text: string } | null>(null);
   const [projectile, setProjectile] = useState<'toBoss' | 'toCat' | null>(null);
   const [catMood, setCatMood] = useState<CatMood>('idle');
-  const [reward, setReward] = useState({ coins: 0, bonus: 0, streak: 1 });
+  const [reward, setReward] = useState<{ coins: number; bonus: number; streak: number; newRoom?: Room }>({ coins: 0, bonus: 0, streak: 1 });
   const bossAnim = useAnimation();
   const mobile = useIsMobile();
   const startedAt = useRef(Date.now());
@@ -86,7 +88,10 @@ export function BossScreen({ worldId, nav }: { worldId: string; nav: Nav }) {
     setFeedback(null);
     setCatMood('idle');
     if (hp <= 0) {
-      setReward(defeatBoss(world.id, Math.max(1, Math.round((Date.now() - startedAt.current) / 60000))));
+      const earned = defeatBoss(world.id, Math.max(1, Math.round((Date.now() - startedAt.current) / 60000)));
+      // 5-й, 10-й и 15-й пройденный уровень открывает новую комнату в домике
+      const opened = earned.firstTime && !world.custom ? roomOpenedAt(passedWorldsCount(useGame.getState())) : undefined;
+      setReward({ ...earned, newRoom: opened });
       setPhase('win');
       sfx.fanfare();
       celebrate(true);
@@ -166,6 +171,17 @@ export function BossScreen({ worldId, nav }: { worldId: string; nav: Nav }) {
             <div className="pill" style={{ fontSize: 20, background: '#fff4c4' }}>
               🎁 Ежедневный бонус: +{reward.bonus} <Coin size={20} /> {reward.streak > 1 ? `(${reward.streak} дн. подряд)` : ''}
             </div>
+          )}
+          {reward.newRoom && (
+            <motion.button
+              className="btn white"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 1.4, type: 'spring' }}
+              onClick={() => nav({ name: 'home', room: reward.newRoom!.id })}
+            >
+              <span className="pic">{reward.newRoom.pic}</span> В домике открылась новая комната: {reward.newRoom.name}!
+            </motion.button>
           )}
           <button
             className="btn good"

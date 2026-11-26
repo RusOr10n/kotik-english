@@ -109,6 +109,30 @@ export const HATS: Record<string, ReactNode> = {
       <circle cx="126" cy="46" r="6" fill="#8fd3ff" />
     </g>
   ),
+  tiara: (
+    <g>
+      <path d="M68 54 Q100 42 132 54" stroke="#cfd8e3" strokeWidth="6" fill="none" strokeLinecap="round" />
+      <path d="M74 51 L80 34 L90 44 L100 18 L110 44 L120 34 L126 51 Q100 42 74 51 Z" fill="#eef3f8" stroke="#a7b4c2" strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="100" cy="36" r="5.5" fill="#ff5c9a" stroke="#fff" strokeWidth="1.5" />
+      <circle cx="82" cy="42" r="3" fill="#8fd3ff" />
+      <circle cx="118" cy="42" r="3" fill="#8fd3ff" />
+      <circle cx="100" cy="17" r="3" fill="#fff" />
+    </g>
+  ),
+  diamondcrown: (
+    <g>
+      <polygon points="66,52 62,12 82,32 100,-2 118,32 138,12 134,52" fill="#ffd23f" stroke="#e0a800" strokeWidth="2" strokeLinejoin="round" />
+      <rect x="64" y="42" width="72" height="11" rx="3" fill="#ffb300" stroke="#e0a800" strokeWidth="2" />
+      <polygon points="100,22 109,33 100,44 91,33" fill="#8fe3ff" stroke="#fff" strokeWidth="1.5" />
+      <polygon points="80,30 86,37 80,44 74,37" fill="#ff8fc7" stroke="#fff" strokeWidth="1.5" />
+      <polygon points="120,30 126,37 120,44 114,37" fill="#b9f6ca" stroke="#fff" strokeWidth="1.5" />
+      <circle cx="62" cy="11" r="5" fill="#fff" stroke="#e0f7ff" strokeWidth="2" />
+      <circle cx="100" cy="-3" r="6" fill="#fff" stroke="#e0f7ff" strokeWidth="2" />
+      <circle cx="138" cy="11" r="5" fill="#fff" stroke="#e0f7ff" strokeWidth="2" />
+      <text x="140" y="34" fontSize="14" fill="#fff">✦</text>
+      <text x="50" y="40" fontSize="10" fill="#fff">✦</text>
+    </g>
+  ),
   flower: (
     <g transform="translate(132 46)">
       {[0, 72, 144, 216, 288].map((a) => (
@@ -167,6 +191,18 @@ export const GLASSES: Record<string, ReactNode> = {
     <g fill="#ffd23f" fillOpacity="0.92" stroke="#f57f17" strokeWidth="2" strokeLinejoin="round">
       <polygon points="80,70 85,82 98,83 88,91 91,104 80,97 69,104 72,91 62,83 75,82" />
       <polygon points="120,70 125,82 138,83 128,91 131,104 120,97 109,104 112,91 102,83 115,82" />
+    </g>
+  ),
+  rainbowglasses: (
+    <g fill="none" strokeWidth="2.6">
+      <circle cx="80" cy="88" r="13" fill="rgba(255,255,255,0.25)" stroke="#b388ff" />
+      <circle cx="120" cy="88" r="13" fill="rgba(255,255,255,0.25)" stroke="#b388ff" />
+      <circle cx="80" cy="88" r="15.5" stroke="#4fc3f7" />
+      <circle cx="120" cy="88" r="15.5" stroke="#4fc3f7" />
+      <circle cx="80" cy="88" r="18" stroke="#ffd23f" />
+      <circle cx="120" cy="88" r="18" stroke="#ffd23f" />
+      <circle cx="80" cy="88" r="20.5" stroke="#ff6fa5" />
+      <circle cx="120" cy="88" r="20.5" stroke="#ff6fa5" />
     </g>
   ),
 };
@@ -235,6 +271,15 @@ export const NECK: Record<string, ReactNode> = {
       <path d="M70 130 L74 126 M84 136 L88 131 M100 139 L102 134 M114 136 L116 131" stroke="#bbdefb" strokeWidth="3" />
     </g>
   ),
+  locket: (
+    <g>
+      <path d="M62 123 Q100 150 138 123" stroke="#e0a800" strokeWidth="3" fill="none" strokeDasharray="4 2" strokeLinecap="round" />
+      <path d="M100 136 V146" stroke="#e0a800" strokeWidth="3" />
+      <path d="M100 170 L86 156 A7 7 0 0 1 100 146 A7 7 0 0 1 114 156 Z" fill="#ffd23f" stroke="#e0a800" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M100 163 L94 157 A3 3 0 0 1 100 153 A3 3 0 0 1 106 157 Z" fill="#ff4f7b" />
+      <circle cx="91" cy="153" r="2" fill="#fff" />
+    </g>
+  ),
 };
 
 export const BACK: Record<string, ReactNode> = {
@@ -272,6 +317,25 @@ export const BACK: Record<string, ReactNode> = {
       <path d="M138 176 Q147 206 156 176 Z" fill="#ff9800" />
       <path d="M48 176 Q53 192 58 176 Z" fill="#ffeb3b" />
       <path d="M142 176 Q147 192 152 176 Z" fill="#ffeb3b" />
+    </g>
+  ),
+  dragon: (
+    <g strokeLinejoin="round">
+      {[false, true].map((mirror) => (
+        <g key={String(mirror)} transform={mirror ? 'translate(200 0) scale(-1 1)' : undefined}>
+          <path d="M62 140 L14 92 Q24 118 8 128 Q28 134 16 154 Q36 152 30 174 Q48 160 64 168 Z" fill="#43a047" stroke="#2e7d32" strokeWidth="2.5" />
+          <path d="M62 142 L14 92 M60 148 L8 128 M60 154 L16 154 M62 160 L30 174" stroke="#2e7d32" strokeWidth="2" fill="none" />
+          <circle cx="14" cy="92" r="3" fill="#ffd23f" />
+        </g>
+      ))}
+    </g>
+  ),
+  rainbow: (
+    <g fill="none" strokeWidth="8">
+      {['#ff5c5c', '#ff9f43', '#ffd23f', '#5ccf6a', '#4fc3f7', '#9575cd'].map((color, i) => {
+        const r = 94 - i * 8;
+        return <path key={color} d={`M${100 - r} 216 V150 A${r} ${r} 0 0 1 ${100 + r} 150 V216`} stroke={color} />;
+      })}
     </g>
   ),
   cape: <path d="M64 124 Q30 190 46 218 L154 218 Q170 190 136 124 Q100 140 64 124 Z" fill="#e53935" stroke="#b71c1c" strokeWidth="2" />,

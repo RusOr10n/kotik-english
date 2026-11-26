@@ -5,13 +5,16 @@ import { sfx } from '../audio/sfx';
 import type { CatMood } from '../components/cat/Cat';
 import { MyCat } from '../components/cat/MyCat';
 import { HomeItemArt } from '../components/home/HomeItemArt';
+import { HomeWindow } from '../components/home/HomeWindow';
 import { Coins } from '../components/ui/Coins';
 import { Icon, WithIcon } from '../components/ui/Icon';
 import { useIsMobile } from '../components/ui/useIsMobile';
-import { HOME_ITEMS, type HomeItem } from '../content/home';
+import { HOME_ITEMS, ROOMS, ROOM_BY_ID, roomOf, type HomeItem, type RoomId } from '../content/home';
 import type { Phrase } from '../content/types';
+import { isRoomUnlocked, passedWorldsCount } from '../state/progress';
 import { useGame } from '../state/store';
 import type { Nav } from '../App';
+import type { ShopTab } from './ShopScreen';
 
 type Pos = { x: number; y: number };
 type Fx = { id: string; kind: 'wiggle' | 'spin' | 'bounce'; n: number };
@@ -22,12 +25,19 @@ const FLOOR_FRONT = 91;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const clampX = (x: number) => Math.max(5, Math.min(95, x));
 
-/** Комната котика: купленный интерьер и игрушки, с которыми он играет */
-export function HomeScreen({ nav }: { nav: Nav }) {
+/** Домик котика: комнаты с купленными вещами, с которыми котик играет */
+export function HomeScreen({ nav, initialRoom }: { nav: Nav; initialRoom?: RoomId }) {
   const owned = useGame((s) => s.owned);
   const coins = useGame((s) => s.coins);
   const catName = useGame((s) => s.profile?.catName ?? 'Котик');
-  const items = HOME_ITEMS.filter((i) => owned.includes(i.id));
+  const bossDefeated = useGame((s) => s.bossDefeated);
+  const settings = useGame((s) => s.settings);
+  const unlocked = (id: RoomId) => isRoomUnlocked({ bossDefeated, settings, lessonStars: {} }, ROOM_BY_ID[id]);
+  const [roomId, setRoomId] = useState<RoomId>(() => (initialRoom && unlocked(initialRoom) ? initialRoom : 'living'));
+  const room = ROOM_BY_ID[roomId];
+  const items = HOME_ITEMS.filter((i) => roomOf(i) === roomId && owned.includes(i.id));
+  const shopTab: ShopTab = roomId === 'living' ? 'interior' : roomId;
+  const [notice, setNotice] = useState<string | null>(null);
 
   const [cat, setCat] = useState<Pos>(HOME);
   const [dur, setDur] = useState(0.8);
@@ -74,6 +84,32 @@ export function HomeScreen({ nav }: { nav: Nav }) {
 
   const posOf = (item: HomeItem): Pos => toyPos[item.id] ?? { x: item.x, y: item.y };
 
+  /** Переход в другую комнату; закрытая комната подсказывает, сколько уровней осталось */
+  const goToRoom = (id: RoomId) => {
+    if (busy || id === roomId) return;
+    sfx.click();
+    if (!unlocked(id)) {
+      const left = ROOM_BY_ID[id].unlockAt - passedWorldsCount({ bossDefeated });
+      setHint(false);
+      setNotice(`🔒 ${ROOM_BY_ID[id].name} откроется, когда пройдёшь ${ROOM_BY_ID[id].unlockAt} уровней. Осталось: ${left}.`);
+      return;
+    }
+    setNotice(null);
+    setRoomId(id);
+    setToyPos({});
+    setDot(null);
+    setCatFx({ scale: 1, opacity: 1, rotate: 0 });
+    setDur(0);
+    setCat(HOME);
+    setMood('happy');
+    say(ROOM_BY_ID[id].phrase);
+    setTimeout(() => {
+      if (!alive.current) return;
+      setBubble(null);
+      setMood('idle');
+    }, 2200);
+  };
+
   /** Котик идёт в точку; время пути зависит от расстояния */
   const walkTo = async (to: Pos, opts: { run?: boolean } = {}) => {
     const from = catRef.current;
@@ -111,7 +147,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
           setCatFx({ scale: 0.85, opacity: 1, rotate: 0 });
           setMood('sleep');
           say(item.phrase);
-          float(['💤', '💤'], p);
+          float(item.floats ?? ['💤', '💤'], p);
           await wait(4000);
           setCatFx({ scale: 1, opacity: 1, rotate: 0 });
           break;
@@ -122,7 +158,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
           setMood('happy');
           effect(item.id, 'wiggle');
           say(item.phrase);
-          float(['😋', '❤️'], p);
+          float(item.floats ?? ['😋', '❤️'], p);
           await wait(3000);
           break;
         }
@@ -161,7 +197,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
           await walkTo({ x: p.x, y: Math.min(FLOOR_FRONT, p.y + 18) });
           setMood('think');
           say(item.phrase);
-          float(['✨', '👀'], p);
+          float(item.floats ?? ['✨', '👀'], p);
           await wait(3200);
           break;
         }
@@ -186,7 +222,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
           effect(item.id, 'bounce');
           setCatFx({ scale: 1, opacity: 1, rotate: [0, -12, 12, -12, 12, -12, 12, 0] });
           say(item.phrase);
-          float(['🎵', '🎶', '🎵'], p);
+          float(item.floats ?? ['🎵', '🎶', '🎵'], p);
           sfx.fanfare();
           await wait(3200);
           setCatFx({ scale: 1, opacity: 1, rotate: 0 });
@@ -236,6 +272,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
           setCat({ x: p.x, y: p.y - 4 });
           sfx.meow();
           say(item.phrase);
+          if (item.floats) float(item.floats, p);
           await wait(2400);
           setDur(0.4);
           setCat({ x: p.x, y: FLOOR_FRONT });
@@ -247,7 +284,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
           setMood('happy');
           effect(item.id, 'spin');
           say(item.phrase);
-          float(['❤️', '⭐'], p);
+          float(item.floats ?? ['❤️', '⭐'], p);
           await wait(3000);
           break;
         }
@@ -255,7 +292,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
           await walkTo({ x: clampX(p.x - 8), y: FLOOR_FRONT });
           setMood('happy');
           say(item.phrase);
-          float(['🫧', '🫧', '🫧', '🫧', '🫧', '🫧'], { x: p.x - 6, y: p.y });
+          float(item.floats ?? ['🫧', '🫧', '🫧', '🫧', '🫧', '🫧'], { x: p.x - 6, y: p.y });
           for (let i = 0; i < 4; i++) {
             await wait(600);
             sfx.click();
@@ -289,58 +326,54 @@ export function HomeScreen({ nav }: { nav: Nav }) {
         </h1>
         <div className="grow" />
         <Coins value={coins} />
-        <button className="btn white small menu-btn" title="Купить вещи" onClick={() => nav({ name: 'shop', tab: 'interior' })}>
+        <button className="btn white small menu-btn" title="Купить вещи" onClick={() => nav({ name: 'shop', tab: shopTab })}>
           <Icon name="shop" />
           <span className="hide-mobile">Купить вещи</span>
         </button>
-        <button className="btn white small menu-btn" title="Подсказка" onClick={() => setHint((h) => !h)}>
+        <button className="btn white small menu-btn" title="Подсказка" onClick={() => { setNotice(null); setHint((h) => !h); }}>
           <Icon name="hint" />
         </button>
+      </div>
+
+      {/* комнаты домика: новые открываются после 5, 10 и 15 уровней */}
+      <div className="row gap-8" style={{ padding: mobile ? '0 10px 8px' : '0 24px 10px', overflowX: 'auto', flexShrink: 0 }}>
+        {ROOMS.map((r) => {
+          const open = unlocked(r.id);
+          return (
+            <button
+              key={r.id}
+              className={`btn small ${r.id === roomId ? '' : 'white'}`}
+              style={{ whiteSpace: 'nowrap', flexShrink: 0, opacity: open ? 1 : 0.7 }}
+              onClick={() => goToRoom(r.id)}
+            >
+              <span className="pic">{open ? r.pic : '🔒'}</span> {r.name}
+            </button>
+          );
+        })}
       </div>
 
       <div ref={scroller} className="grow" style={{ position: 'relative', overflowX: mobile ? 'auto' : 'hidden', overflowY: 'hidden' }}>
       {/* на телефоне комната шире экрана и листается пальцем */}
       <div style={{ position: 'relative', height: '100%', width: mobile ? ROOM_WIDTH_MOBILE : '100%', overflow: 'hidden' }}>
         {/* стена */}
-        <div
-          style={{
-            position: 'absolute', inset: 0, bottom: '30%',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.5) 2px, transparent 2.5px) 0 0 / 28px 28px, linear-gradient(180deg, #ffe6ef 0%, #ffd9e6 100%)',
-          }}
-        />
+        <div style={{ position: 'absolute', inset: 0, bottom: '30%', background: room.wall }} />
         {/* плинтус и пол */}
-        <div style={{ position: 'absolute', left: 0, right: 0, top: '70%', height: 10, background: '#f3c1d3' }} />
-        <div
-          style={{
-            position: 'absolute', left: 0, right: 0, bottom: 0, top: 'calc(70% + 10px)',
-            background: 'repeating-linear-gradient(90deg, #e9c79f 0px, #e9c79f 118px, #dcb68c 118px, #dcb68c 122px), #e9c79f',
-          }}
-        />
-        {/* окно */}
-        <div style={{ position: 'absolute', left: '50%', top: '6%', transform: `translateX(-50%) scale(${mobile ? 0.75 : 1})`, transformOrigin: 'top center', width: 240, height: 160 }}>
-          <div
-            style={{
-              position: 'absolute', inset: 0, border: '10px solid #fff', borderRadius: 14, overflow: 'hidden',
-              background: 'linear-gradient(180deg, #8fd3ff 0%, #d6f1ff 100%)', boxShadow: '0 6px 0 rgba(0,0,0,0.08)',
-            }}
-          >
-            <span className="pic" style={{ position: 'absolute', right: 18, top: 10, fontSize: 36 }}>☀️</span>
-            <motion.span className="pic" style={{ position: 'absolute', top: 40, fontSize: 34 }} animate={{ left: [-60, 260] }} transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}>
-              ☁️
-            </motion.span>
-            <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 8, marginLeft: -4, background: '#fff' }} />
-          </div>
-          <div style={{ position: 'absolute', left: -22, top: -8, width: 40, height: 180, background: '#ff9ec4', borderRadius: '0 0 20px 20px' }} />
-          <div style={{ position: 'absolute', right: -22, top: -8, width: 40, height: 180, background: '#ff9ec4', borderRadius: '0 0 20px 20px' }} />
-        </div>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: '70%', height: 10, background: room.baseboard }} />
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: 'calc(70% + 10px)', background: room.floor }} />
+        {/* окно с погодой: window, sun, cloud, rain, snow, wind — всё озвучивается по нажатию */}
+        {roomId === 'living' && <HomeWindow scale={mobile ? 0.75 : 1} />}
+        {/* с диско-шаром по комнате бегают цветные огоньки */}
+        {roomId === 'disco' && owned.includes('disco-ball') && <DiscoLights />}
 
         {items.length === 0 && (
           <div className="card col center gap-12" style={{ position: 'absolute', left: '50%', top: '42%', transform: 'translate(-50%, -50%)', padding: 24, zIndex: 50, width: 'min(420px, 90vw)' }}>
-            <b style={{ fontSize: 22 }}>Домик пока пустой</b>
+            <b style={{ fontSize: 22 }}>{roomId === 'living' ? 'Домик пока пустой' : `${room.name} пока пустая`}</b>
             <span className="muted" style={{ fontWeight: 700, textAlign: 'center', maxWidth: 360 }}>
-              Купи в магазине мебель и игрушки — котик будет с ними играть и говорить по-английски!
+              {roomId === 'living'
+                ? 'Купи в магазине мебель и игрушки — котик будет с ними играть и говорить по-английски!'
+                : 'Купи в магазине вещи для этой комнаты — котик будет с ними играть и говорить по-английски!'}
             </span>
-            <button className="btn good" onClick={() => nav({ name: 'shop', tab: 'interior' })}>
+            <button className="btn good" onClick={() => nav({ name: 'shop', tab: shopTab })}>
               <WithIcon icon="shop" size={22} color="#fff">В магазин</WithIcon>
             </button>
           </div>
@@ -423,16 +456,22 @@ export function HomeScreen({ nav }: { nav: Nav }) {
             )}
           </AnimatePresence>
           <motion.div animate={catFx} transition={{ duration: 0.8 }}>
-            <div
-              style={{ transform: facingLeft ? 'scaleX(-1)' : 'none', cursor: 'pointer' }}
-              onClick={() => {
-                if (busy) return;
-                sfx.meow();
-                say({ en: 'Meow! I love my home!', ru: 'Мяу! Я люблю свой домик!' });
-                setTimeout(() => alive.current && setBubble(null), 2500);
-              }}
-            >
-              <MyCat mood={mood} size={mobile ? 92 : 120} meow={false} />
+            <div style={{ transform: facingLeft ? 'scaleX(-1)' : 'none' }}>
+              <MyCat
+                mood={mood}
+                size={mobile ? 92 : 120}
+                mirrored={facingLeft}
+                onTap={() => {
+                  if (busy) return;
+                  sfx.meow();
+                  say({ en: 'Meow! I love my home!', ru: 'Мяу! Я люблю свой домик!' });
+                  setTimeout(() => alive.current && setBubble(null), 2500);
+                }}
+                onSixSeven={() => {
+                  setBubble({ en: 'Six seven!', ru: 'Шесть-семь!' });
+                  setTimeout(() => alive.current && setBubble(null), 2500);
+                }}
+              />
             </div>
           </motion.div>
         </motion.div>
@@ -451,10 +490,51 @@ export function HomeScreen({ nav }: { nav: Nav }) {
             >
               👆 Нажимай на вещи — {catName} будет с ними играть и говорить по-английски!
               {mobile && <div style={{ marginTop: 6 }}>↔ Комнату можно листать пальцем.</div>}
+              <div style={{ marginTop: 6 }}>🚪 Новые комнаты открываются после 5, 10 и 15 пройденных уровней.</div>
+              <div className="muted" style={{ fontSize: 13, marginTop: 6 }}>Нажми, чтобы закрыть</div>
+            </motion.div>
+          )}
+          {notice && (
+            <motion.div
+              className="bubble"
+              style={{ position: 'absolute', right: 12, top: 8, zIndex: 150, maxWidth: 'min(340px, calc(100% - 24px))' }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              onClick={() => setNotice(null)}
+            >
+              {notice}
               <div className="muted" style={{ fontSize: 13, marginTop: 6 }}>Нажми, чтобы закрыть</div>
             </motion.div>
           )}
         </AnimatePresence>
     </div>
+  );
+}
+
+/** Точки пути со сдвигом на shift и с возвратом в начало — чтобы повтор шёл без рывка */
+const loop = (points: string[], shift: number) => {
+  const p = points.map((_, k) => points[(k + shift) % points.length]);
+  return [...p, p[0]];
+};
+
+const DISCO_COLORS =['rgba(255,79,216,0.45)', 'rgba(79,195,247,0.45)', 'rgba(255,210,63,0.4)', 'rgba(124,255,160,0.35)'];
+
+/** Цветные пятна света от диско-шара */
+function DiscoLights() {
+  return (
+    <>
+      {DISCO_COLORS.map((color, i) => (
+        <motion.div
+          key={color}
+          style={{
+            position: 'absolute', width: 180, height: 180, borderRadius: '50%', pointerEvents: 'none', zIndex: 2,
+            background: `radial-gradient(circle, ${color} 0%, transparent 70%)`, x: '-50%', y: '-50%',
+          }}
+          animate={{ left: loop(['15%', '80%', '45%', '20%'], i), top: loop(['30%', '75%', '55%', '85%'], i * 2) }}
+          transition={{ duration: 7 + i * 1.5, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      ))}
+    </>
   );
 }

@@ -1,3 +1,4 @@
+import { ROOMS, type Room } from '../content/home';
 import type { World } from '../content/types';
 import { BUILTIN_WORLDS, WORLDS } from '../content/worlds';
 import type { GameState } from './store';
@@ -32,6 +33,21 @@ export function currentNodeIndex(state: ProgressView, world: World): number {
   const idx = world.lessons.findIndex((l) => !state.lessonStars[l.id]);
   if (idx >= 0) return idx;
   return world.lessons.length; // босс (пройден или нет)
+}
+
+/** Сколько уровней основного сюжета пройдено (побеждён босс); темы родителя не считаются */
+export function passedWorldsCount(state: Pick<ProgressView, 'bossDefeated'>): number {
+  return BUILTIN_WORLDS.filter((w) => state.bossDefeated[w.id]).length;
+}
+
+/** Комнаты домика открываются после 5, 10 и 15 пройденных уровней */
+export function isRoomUnlocked(state: ProgressView, room: Room): boolean {
+  return state.settings.unlockAll || passedWorldsCount(state) >= room.unlockAt;
+}
+
+/** Комната, которая открылась ровно на этом числе пройденных уровней (для поздравления после босса) */
+export function roomOpenedAt(passed: number): Room | undefined {
+  return ROOMS.find((r) => r.unlockAt > 0 && r.unlockAt === passed);
 }
 
 /** Самый дальний открытый мир основного сюжета — открываем карту на нём */

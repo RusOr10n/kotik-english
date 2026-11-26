@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { configureSpeech } from './audio/speech';
 import { setMuted } from './audio/sfx';
+import { ROOMS, type RoomId } from './content/home';
 import { WORLDS, findLesson, findWorld } from './content/worlds';
 import { latestWorldIndex } from './state/progress';
 import { useGame } from './state/store';
@@ -24,7 +25,7 @@ export type Route =
   | { name: 'review' }
   | { name: 'reward'; title: string; stars?: number; coins: number; bonus?: number; streak?: number; message?: string; then: Route; retry?: Route }
   | { name: 'shop'; tab?: ShopTab }
-  | { name: 'home' }
+  | { name: 'home'; room?: RoomId }
   | { name: 'album' }
   | { name: 'parent' };
 
@@ -32,7 +33,7 @@ export type Nav = (route: Route) => void;
 
 /**
  * Прямые ссылки на экраны: #/map/3, #/lesson/be-1, #/lesson/be-1/4 (сразу 4-е задание),
- * #/boss/home, #/shop/toy, #/home, #/album, #/review, #/parent
+ * #/boss/home, #/shop/toy, #/home, #/home/kitchen, #/album, #/review, #/parent
  */
 export function routeFromHash(hash: string): Route | null {
   const [name, a, b] = hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
@@ -49,6 +50,7 @@ export function routeFromHash(hash: string): Route | null {
       case 'shop':
         return { name: 'shop', tab: (a as ShopTab) || undefined };
       case 'home':
+        return { name: 'home', room: ROOMS.find((r) => r.id === a)?.id };
       case 'album':
       case 'review':
       case 'parent':
@@ -106,7 +108,7 @@ export function App() {
       case 'shop':
         return <ShopScreen nav={nav} initialTab={route.tab} />;
       case 'home':
-        return <HomeScreen nav={nav} />;
+        return <HomeScreen nav={nav} initialRoom={route.room} />;
       case 'album':
         return <AlbumScreen nav={nav} />;
       case 'parent':

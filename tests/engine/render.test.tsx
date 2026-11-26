@@ -48,8 +48,13 @@ describe('smoke render: new screens', () => {
   it('renders home, shop tabs and parent themes panel', async () => {
     const { HomeScreen } = await import('../../src/screens/HomeScreen');
     expect(renderToString(<HomeScreen nav={nav} />)).toContain('Домик');
-    expect(renderToString(<ShopScreen nav={nav} initialTab="interior" />)).toContain('Интерьер');
+    expect(renderToString(<ShopScreen nav={nav} initialTab="interior" />)).toContain('Гостиная');
     expect(renderToString(<ShopScreen nav={nav} initialTab="toy" />)).toContain('Клубок');
+    // закрытая комната: товары видны, но купить пока нельзя
+    const kitchen = renderToString(<ShopScreen nav={nav} initialTab="kitchen" />);
+    expect(kitchen).toContain('Холодильник');
+    expect(kitchen).toContain('пока закрыта');
+    expect(renderToString(<HomeScreen nav={nav} initialRoom="disco" />)).toContain('Диско-комната');
     expect(renderToString(<ParentScreen nav={nav} />)).toContain('Свои темы');
   });
 });

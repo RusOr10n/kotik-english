@@ -26,6 +26,10 @@ export const FURS: Fur[] = [
   { id: 'silver', name: 'Серебристый', base: '#d4dbe3', dark: '#9aa8b8', belly: '#f6f8fa', stripes: true, price: 90 },
   { id: 'lemon', name: 'Лимонный', base: '#fff176', dark: '#f6d743', belly: '#fffde7', price: 80 },
   { id: 'night', name: 'Звёздная ночь', base: '#3f4a8a', dark: '#7b88d8', belly: '#6c78c4', stripes: true, price: 200 },
+  // Премиальные окрасы
+  { id: 'ruby', name: 'Рубиновый', base: '#e0475f', dark: '#a8233c', belly: '#ffd6de', stripes: true, price: 250 },
+  { id: 'emerald', name: 'Изумрудный', base: '#3fbf8a', dark: '#1f8a60', belly: '#d4f7e8', stripes: true, price: 280 },
+  { id: 'royal', name: 'Королевский', base: '#7b4fc9', dark: '#ffd23f', belly: '#e9dcff', stripes: true, price: 350 },
 ];
 
 export const FUR_BY_ID: Record<string, Fur> = Object.fromEntries(FURS.map((f) => [f.id, f]));
@@ -67,6 +71,13 @@ export const ITEMS: Item[] = [
   { id: 'butterfly', slot: 'back', name: 'Крылья бабочки', price: 90 },
   { id: 'angel', slot: 'back', name: 'Крылья ангела', price: 110 },
   { id: 'jetpack', slot: 'back', name: 'Реактивный ранец', price: 150 },
+  // Премиальные вещи
+  { id: 'tiara', slot: 'hat', name: 'Тиара принцессы', price: 250 },
+  { id: 'diamondcrown', slot: 'hat', name: 'Бриллиантовая корона', price: 400 },
+  { id: 'rainbowglasses', slot: 'glasses', name: 'Радужные очки', price: 260 },
+  { id: 'locket', slot: 'neck', name: 'Золотой медальон', price: 270 },
+  { id: 'dragon', slot: 'back', name: 'Крылья дракона', price: 320 },
+  { id: 'rainbow', slot: 'back', name: 'Радуга', price: 450 },
 ];
 
 export const SLOT_NAMES: Record<Slot, string> = {

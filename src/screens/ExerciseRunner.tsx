@@ -38,7 +38,7 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
   const clearSession = useGame((s) => s.clearSession);
   const profile = useGame((s) => s.profile);
   const equipped = useGame((s) => s.equipped);
-  const [phase, setPhase] = useState<'intro' | 'play'>(resume?.phase ?? (intro?.length ? 'intro' : 'play'));
+  const [phase, setPhase] = useState<'intro' | 'play'>(resume?.phase ?? (intro?.length || rule?.length ? 'intro' : 'play'));
   const [introIndex, setIntroIndex] = useState(resume?.introIndex ?? 0);
   const [queue, setQueue] = useState(resume?.queue ?? exercises);
   const [index, setIndex] = useState(resume?.index ?? 0);
@@ -155,8 +155,8 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
         )}
       </div>
 
-      {phase === 'intro' && intro ? (
-        <IntroCards words={intro} rule={rule} startIndex={introIndex} onIndexChange={setIntroIndex} onDone={() => setPhase('play')} />
+      {phase === 'intro' && (intro?.length || rule?.length) ? (
+        <IntroCards words={intro ?? []} rule={rule} startIndex={introIndex} onIndexChange={setIntroIndex} onDone={() => setPhase('play')} />
       ) : (
         <div className="grow scroll" style={{ display: 'flex', flexDirection: 'column', paddingBottom: mobile ? 12 : feedback ? 24 : 110 }}>
           <AnimatePresence mode="wait">

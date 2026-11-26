@@ -26,7 +26,8 @@ export function LessonPlay({ lessonId, nav, startAt }: { lessonId: string; nav: 
     [lessonId],
   );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const intro = useMemo(() => (alreadyDone ? undefined : lesson.words.map(getWord)), [lessonId]);
+  // в уроке-повторении слова уже знакомы — карточек «Новое слово» нет, только правило
+  const intro = useMemo(() => (alreadyDone || lesson.review ? undefined : lesson.words.map(getWord)), [lessonId]);
 
   return (
     <ExerciseRunner
@@ -34,7 +35,7 @@ export function LessonPlay({ lessonId, nav, startAt }: { lessonId: string; nav: 
       background={world.bg}
       sessionKey={lessonId}
       exercises={exercises}
-      intro={intro ?? (resume?.phase === 'intro' ? lesson.words.map(getWord) : undefined)}
+      intro={intro ?? (resume?.phase === 'intro' && !lesson.review ? lesson.words.map(getWord) : undefined)}
       rule={lesson.rule}
       resume={resume}
       onExit={() => nav({ name: 'map', worldIndex: WORLDS.indexOf(world) })}

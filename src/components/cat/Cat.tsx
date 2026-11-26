@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { speak } from '../../audio/speech';
 import { FUR_BY_ID } from '../../content/shop';
 import type { Slot } from '../../content/shop';
 import { BACK, GLASSES, HATS, NECK } from './Accessories';
@@ -11,19 +13,46 @@ type Props = {
   mood?: CatMood;
   size?: number;
   onClick?: () => void;
+  /** Пасхалка: котика тапнули 3 раза подряд — он говорит «six seven» */
+  onSixSeven?: () => void;
+  /** Котик отражён по горизонтали снаружи — цифры 6 и 7 надо развернуть обратно */
+  mirrored?: boolean;
   className?: string;
 };
 
 const INK = '#2d2a32';
+const TAP_GAP_MS = 500;
+const SIX_SEVEN_MS = 2600;
 
-export function Cat({ fur, accessories = {}, mood = 'idle', size = 160, onClick, className }: Props) {
+export function Cat({ fur, accessories = {}, mood: moodProp = 'idle', size = 160, onClick, onSixSeven, mirrored, className }: Props) {
   const f = FUR_BY_ID[fur] ?? FUR_BY_ID.ginger;
+  const [sixSeven, setSixSeven] = useState(false);
+  const taps = useRef({ count: 0, last: 0 });
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const handleClick = onClick && (() => {
+    const now = Date.now();
+    const t = taps.current;
+    t.count = now - t.last < TAP_GAP_MS ? t.count + 1 : 1;
+    t.last = now;
+    if (t.count < 3) return onClick();
+    t.count = 0;
+    setSixSeven(true);
+    void speak('Six seven!');
+    onSixSeven?.();
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setSixSeven(false), SIX_SEVEN_MS);
+  });
+
+  const mood = sixSeven ? 'happy' : moodProp;
   const happy = mood === 'happy';
   const sad = mood === 'sad';
   const sleeping = mood === 'sleep';
 
   const bodyAnim =
-    happy ? { y: [0, -26, 0, -12, 0], transition: { duration: 0.9, repeat: Infinity, repeatDelay: 0.4 } }
+    sixSeven ? { y: [0, -4, 0], rotate: [-4, 4, -4], transition: { duration: 0.5, repeat: Infinity, ease: 'easeInOut' } }
+    : happy ? { y: [0, -26, 0, -12, 0], transition: { duration: 0.9, repeat: Infinity, repeatDelay: 0.4 } }
     : mood === 'walk' ? { y: [0, -6, 0], rotate: [-3, 3, -3], transition: { duration: 0.45, repeat: Infinity } }
     : sleeping ? { scaleY: [1, 1.03, 1], transition: { duration: 2.4, repeat: Infinity } }
     : { y: 0, rotate: 0, scaleY: 1 };
@@ -43,7 +72,7 @@ export function Cat({ fur, accessories = {}, mood = 'idle', size = 160, onClick,
       width={size}
       height={(size * 250) / 220}
       className={className}
-      onClick={onClick}
+      onClick={handleClick}
       style={{ cursor: onClick ? 'pointer' : undefined, overflow: 'visible' }}
       animate={bodyAnim}
     >
@@ -164,6 +193,57 @@ export function Cat({ fur, accessories = {}, mood = 'idle', size = 160, onClick,
           </motion.text>
         )}
       </motion.g>
+
+      {sixSeven && <SixSevenPaws f={f} mirrored={mirrored} />}
     </motion.svg>
+  );
+}
+
+/** Передние лапки ладошками вверх по очереди качаются вверх-вниз, над ними всплывают 6 и 7 */
+function SixSevenPaws({ f, mirrored }: { f: { base: string; dark: string }; mirrored?: boolean }) {
+  const swing = (phase: 0 | 1) => ({
+    animate: { y: phase ? [-16, 8, -16] : [8, -16, 8] },
+    transition: { duration: 0.42, repeat: Infinity, ease: 'easeInOut' as const },
+  });
+  const paw = (side: -1 | 1) => {
+    const px = 100 + side * 54;
+    return (
+      <>
+        <path d={`M${100 + side * 30} 168 Q${100 + side * 46} 166 ${px} 150`} stroke={f.base} strokeWidth="17" fill="none" strokeLinecap="round" />
+        <ellipse cx={px} cy="146" rx="15" ry="9" fill={f.base} />
+        {/* розовые подушечки — лапка ладошкой вверх */}
+        <ellipse cx={px} cy="144" rx="6" ry="3.5" fill="#ffb3c7" />
+        <circle cx={px - 8} cy="139" r="2.6" fill="#ffb3c7" />
+        <circle cx={px} cy="137" r="2.6" fill="#ffb3c7" />
+        <circle cx={px + 8} cy="139" r="2.6" fill="#ffb3c7" />
+      </>
+    );
+  };
+  const digit = (text: string, x: number, delay: number) => (
+    <g transform={mirrored ? `translate(${2 * x} 0) scale(-1 1)` : undefined}>
+      <motion.text
+        x={x}
+        textAnchor="middle"
+        fontSize="34"
+        fontWeight="900"
+        fill="#ff7043"
+        stroke="#fff"
+        strokeWidth="5"
+        paintOrder="stroke"
+        initial={{ y: 130, opacity: 0 }}
+        animate={{ y: [130, 104, 96], opacity: [0, 1, 1] }}
+        transition={{ duration: 0.5, delay }}
+      >
+        {text}
+      </motion.text>
+    </g>
+  );
+  return (
+    <g>
+      <motion.g {...swing(0)}>{paw(-1)}</motion.g>
+      <motion.g {...swing(1)}>{paw(1)}</motion.g>
+      {digit('6', 46, 0)}
+      {digit('7', 154, 0.25)}
+    </g>
   );
 }
