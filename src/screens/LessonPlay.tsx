@@ -7,15 +7,24 @@ import { useGame } from '../state/store';
 import type { Nav } from '../App';
 import { ExerciseRunner } from './ExerciseRunner';
 
-export function LessonPlay({ lessonId, nav }: { lessonId: string; nav: Nav }) {
+/** startAt — открыть сразу задание с этим номером (для прямых ссылок #/lesson/<id>/<n>) */
+export function LessonPlay({ lessonId, nav, startAt }: { lessonId: string; nav: Nav; startAt?: number }) {
   const { lesson, world } = findLesson(lessonId);
   const finishLesson = useGame((s) => s.finishLesson);
   const alreadyDone = useGame((s) => !!s.lessonStars[lessonId]);
   // читаем один раз при входе: дальше сессию обновляет сам ExerciseRunner
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const resume = useMemo(() => useGame.getState().savedSessions[lessonId], [lessonId]);
+  const saved = useMemo(() => useGame.getState().savedSessions[lessonId], [lessonId]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const exercises = useMemo(() => buildLesson(lesson, wordsUpToWorld(world.id)), [lessonId]);
+  const resume = useMemo(
+    () =>
+      startAt === undefined
+        ? saved
+        : { queue: exercises, index: Math.min(startAt, exercises.length - 1), mistakes: 0, requeued: [], phase: 'play' as const, introIndex: 0, elapsedMs: 0 },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lessonId],
+  );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const intro = useMemo(() => (alreadyDone ? undefined : lesson.words.map(getWord)), [lessonId]);
 

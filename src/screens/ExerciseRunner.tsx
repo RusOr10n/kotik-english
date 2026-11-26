@@ -6,6 +6,7 @@ import type { Word } from '../content/types';
 import { Cat, type CatMood } from '../components/cat/Cat';
 import { ExerciseView, answerOf } from '../components/exercises/ExerciseView';
 import { ProgressBar } from '../components/ui/ProgressBar';
+import { useIsMobile } from '../components/ui/useIsMobile';
 import { comfort, praise } from '../components/ui/praise';
 import { useKeys } from '../components/ui/useKeys';
 import { type Exercise, type ExerciseResult, SELF_CORRECTING } from '../engine/exercises';
@@ -42,6 +43,7 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
   const [index, setIndex] = useState(resume?.index ?? 0);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [mood, setMood] = useState<CatMood>('idle');
+  const mobile = useIsMobile();
   const mistakes = useRef(resume?.mistakes ?? 0);
   const requeued = useRef(new Set<string>(resume?.requeued ?? []));
   const startedAt = useRef(Date.now() - (resume?.elapsedMs ?? 0));
@@ -142,12 +144,18 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
         </button>
         <span className="hide-mobile" style={{ fontWeight: 900, fontSize: 20, whiteSpace: 'nowrap' }}>{title}</span>
         {phase === 'play' && <ProgressBar value={index / queue.length} />}
+        {/* на телефоне котик сидит в верхней панели, чтобы не закрывать задание */}
+        {phase === 'play' && mobile && (
+          <div style={{ width: 46, height: 46, overflow: 'visible', flexShrink: 0, marginTop: -6 }}>
+            <Cat fur={profile?.fur ?? 'ginger'} accessories={equipped} mood={mood} size={44} onClick={() => sfx.meow()} />
+          </div>
+        )}
       </div>
 
       {phase === 'intro' && intro ? (
         <IntroCards words={intro} rule={rule} startIndex={introIndex} onIndexChange={setIntroIndex} onDone={() => setPhase('play')} />
       ) : (
-        <div className="grow scroll" style={{ display: 'flex', flexDirection: 'column', paddingBottom: 110 }}>
+        <div className="grow scroll" style={{ display: 'flex', flexDirection: 'column', paddingBottom: feedback ? 150 : mobile ? 16 : 110 }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={ex.id}
@@ -164,7 +172,7 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
         </div>
       )}
 
-      {phase === 'play' && (
+      {phase === 'play' && !mobile && (
         <div className="runner-cat" style={{ position: 'absolute', left: 12, bottom: feedback ? 96 : 10, transition: 'bottom 0.3s', zIndex: 21 }}>
           <Cat fur={profile?.fur ?? 'ginger'} accessories={equipped} mood={mood} size={110} onClick={() => sfx.meow()} />
         </div>

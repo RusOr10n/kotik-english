@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { speak } from '../audio/speech';
 import { sfx } from '../audio/sfx';
 import { MyCat } from '../components/cat/MyCat';
@@ -59,6 +59,15 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
   const [gate, setGate] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const strip = useRef<HTMLDivElement>(null);
+
+  // текущий мир — в центр полоски миров
+  useEffect(() => {
+    const el = strip.current;
+    const active = el?.querySelector<HTMLElement>('[data-active]');
+    if (!el || !active) return;
+    el.scrollTo({ left: active.offsetLeft - el.clientWidth / 2 + active.offsetWidth / 2, behavior: 'smooth' });
+  }, [worldIndex]);
   const hasRules = world.lessons.some((l) => l.rule?.length);
   const reviewWords = wordsForReview(state.srs, dayNumber(), 8);
   const dueCount = Object.values(state.srs).filter((p) => p.due <= dayNumber()).length;
@@ -107,19 +116,21 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
   const node = selected !== null ? nodes[selected] : null;
 
   return (
-    <div className="screen" style={{ background: world.bg, overflowY: mobile ? 'auto' : 'hidden' }}>
-      {/* декорации */}
-      {world.decor.map((d, i) => (
-        <motion.span
-          key={`${world.id}-${i}`}
-          className="pic"
-          style={{ position: 'absolute', fontSize: 40 + (i % 3) * 10, left: `${[4, 30, 55, 80, 18, 68][i]}%`, top: `${[22, 85, 18, 86, 52, 58][i]}%`, opacity: 0.55 }}
-          animate={{ y: [0, -10, 0], rotate: [-4, 4, -4] }}
-          transition={{ duration: 3 + i * 0.4, repeat: Infinity }}
-        >
-          {d}
-        </motion.span>
-      ))}
+    <div className="screen" style={{ background: world.bg, overflowY: 'auto' }}>
+      {/* декорации: отдельный нижний слой, не перехватывают нажатия */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+        {world.decor.map((d, i) => (
+          <motion.span
+            key={`${world.id}-${i}`}
+            className="pic"
+            style={{ position: 'absolute', fontSize: 40 + (i % 3) * 10, left: `${[4, 30, 55, 80, 18, 68][i]}%`, top: `${[34, 88, 30, 90, 60, 66][i]}%`, opacity: 0.5 }}
+            animate={{ y: [0, -10, 0], rotate: [-4, 4, -4] }}
+            transition={{ duration: 3 + i * 0.4, repeat: Infinity }}
+          >
+            {d}
+          </motion.span>
+        ))}
+      </div>
 
       <div className="topbar">
         <span className="pill" title="Дней подряд">🐾 {state.streak.count}<span className="hide-mobile"> {plural(state.streak.count, 'день', 'дня', 'дней')}</span></span>
@@ -141,7 +152,7 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
       </div>
 
       {/* заголовок мира */}
-      <div className="row center" style={{ marginTop: 4, gap: mobile ? 8 : 16, padding: '0 8px' }}>
+      <div className="row center" style={{ marginTop: 4, gap: mobile ? 8 : 16, padding: '0 8px', position: 'relative', zIndex: 2 }}>
         <button className="btn white icon" onClick={() => switchWorld(-1)} disabled={worldIndex === 0}>◀</button>
         <AnimatePresence mode="wait">
           <motion.div key={world.id} className="col center" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} style={{ minWidth: mobile ? 0 : 480, flex: mobile ? 1 : undefined }}>
@@ -170,13 +181,14 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
       </div>
 
       {/* быстрый выбор мира */}
-      <div className="row center gap-8" style={{ marginTop: 8, flexWrap: 'wrap', padding: '0 20px' }}>
+      <div ref={strip} className="world-strip" style={{ marginTop: 8 }}>
         {WORLDS.map((w, i) => {
           const open = isWorldUnlocked(state, i);
           const active = i === worldIndex;
           return (
             <motion.button
               key={w.id}
+              data-active={active || undefined}
               title={open ? w.name : `${w.name} — пока закрыт`}
               onClick={() => {
                 sfx.click();
@@ -189,7 +201,8 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
                 border: active ? '3px solid var(--primary)' : w.custom ? '2px dashed #b9a6e8' : '2px solid transparent',
                 background: open ? '#fff' : 'rgba(255,255,255,0.5)', boxShadow: '0 3px 0 rgba(0,0,0,0.1)',
                 filter: open ? 'none' : 'grayscale(1) opacity(0.6)',
-                marginLeft: w.custom && !WORLDS[i - 1]?.custom ? 14 : 0,
+                marginLeft: w.custom && !WORLDS[i - 1]?.custom ? 14 : undefined,
+                flexShrink: 0,
               }}
             >
               <span className="pic">{w.pic}</span>
@@ -201,7 +214,11 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
       {/* тропинка */}
       <div
         className={mobile ? '' : 'grow'}
-        style={{ position: 'relative', margin: mobile ? '8px 8px 28px' : '0 30px 20px', height: mobile ? nodes.length * 118 : undefined, flexShrink: 0 }}
+        style={{
+          position: 'relative', zIndex: 1, margin: mobile ? '8px 8px 28px' : '0 30px 20px', flexShrink: 0,
+          // на телефоне — вертикальная тропинка нужной высоты, на компьютере — не меньше 440px, иначе прокрутка
+          height: mobile ? nodes.length * 118 : undefined, minHeight: mobile ? undefined : 440,
+        }}
       >
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
           <path d={pathD(nodes)} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="28" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
@@ -295,7 +312,7 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
           >
             <motion.div
               className="col gap-12 scroll"
-              style={{ maxHeight: '100%', maxWidth: '100%' }}
+              style={{ maxHeight: '100%', width: 'min(560px, 100%)', alignItems: 'stretch' }}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               onClick={(e) => e.stopPropagation()}

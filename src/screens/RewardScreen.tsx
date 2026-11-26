@@ -40,11 +40,11 @@ export function RewardScreen({ title, stars, coins, bonus = 0, streak = 1, messa
     <div className="screen center" style={{ background: 'radial-gradient(circle at 50% 40%, #fff6d6 0%, #ffd6e6 60%, #e8d9ff 100%)' }}>
       {/* лучики */}
       <motion.div
-        style={{ position: 'absolute', width: 900, height: 900, background: 'repeating-conic-gradient(rgba(255,255,255,0.35) 0deg 10deg, transparent 10deg 20deg)', borderRadius: '50%' }}
+        style={{ position: 'absolute', pointerEvents: 'none', width: 900, height: 900, background: 'repeating-conic-gradient(rgba(255,255,255,0.35) 0deg 10deg, transparent 10deg 20deg)', borderRadius: '50%' }}
         animate={{ rotate: 360 }}
         transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
       />
-      <div className="col center gap-16" style={{ zIndex: 1, padding: '0 16px', textAlign: 'center' }}>
+      <div className="col center gap-16" style={{ position: 'relative', zIndex: 1, padding: '0 16px', textAlign: 'center' }}>
         <motion.h1 className="title" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200, damping: 10 }}>
           {title}
         </motion.h1>

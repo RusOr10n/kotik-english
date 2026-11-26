@@ -78,7 +78,7 @@ export function CatchFish({ ex, onDone }: ExerciseProps<'catchFish'>) {
         {[...Array(10)].map((_, i) => (
           <motion.div
             key={i}
-            style={{ position: 'absolute', left: `${(i * 37) % 100}%`, width: 10 + (i % 3) * 6, height: 10 + (i % 3) * 6, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.6)' }}
+            style={{ position: 'absolute', pointerEvents: 'none', left: `${(i * 37) % 100}%`, width: 10 + (i % 3) * 6, height: 10 + (i % 3) * 6, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.6)' }}
             animate={{ top: ['110%', '-10%'] }}
             transition={{ duration: 5 + (i % 4), repeat: Infinity, delay: i * 0.7, ease: 'linear' }}
           />

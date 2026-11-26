@@ -161,6 +161,7 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
 .topbar {
   display: flex; align-items: center; gap: 12px;
   padding: 14px 22px;
+  position: relative;
   z-index: 5;
 }
 
@@ -229,6 +230,18 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
 .steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-weight: 600; line-height: 1.4; }
 
 
+/* Полоска миров на карте: один ряд, листается вбок; если всё помещается — по центру */
+.world-strip {
+  position: relative; z-index: 2;
+  display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden;
+  padding: 4px 16px 10px; flex-shrink: 0;
+  scroll-snap-type: x proximity; scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+}
+.world-strip > * { scroll-snap-align: center; }
+.world-strip > :first-child { margin-left: auto; }
+.world-strip > :last-child { margin-right: auto; }
+
 /* ---------- Сетки упражнений (общие классы) ---------- */
 .grid-pics { display: grid; grid-template-columns: repeat(4, 150px); gap: 18px; }
 .grid-pics > .option { height: 150px; }
@@ -276,7 +289,7 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
   /* на телефоне задание занимает всю ширину, чтобы сетки ответов могли растянуться */
   .exercise-wrap > * { width: 100%; }
 
-  .feedback { padding: 14px 14px 14px 86px !important; font-size: 19px; gap: 10px; }
+  .feedback { padding: 12px 14px max(12px, env(safe-area-inset-bottom)) 14px !important; font-size: 18px; gap: 10px; }
   .feedback .btn { padding: 10px 14px; }
   .runner-cat { transform: scale(0.6); transform-origin: bottom left; }
 

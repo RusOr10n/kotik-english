@@ -89,7 +89,7 @@ export function BalloonPop({ ex, onDone }: ExerciseProps<'balloons'>) {
           background: 'linear-gradient(180deg, #bfe8ff 0%, #e8f7ff 70%, #c8f0c0 70%, #a8e29b 100%)',
         }}
       >
-        <motion.span className="pic" style={{ position: 'absolute', top: 16, fontSize: 40 }} animate={{ left: ['-10%', '110%'] }} transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}>
+        <motion.span className="pic" style={{ position: 'absolute', top: 16, fontSize: 40, pointerEvents: 'none' }} animate={{ left: ['-10%', '110%'] }} transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}>
           ☁️
         </motion.span>
         <span className="pic" style={{ position: 'absolute', right: '6%', bottom: '4%', fontSize: 42 }}>🌳</span>
@@ -140,7 +140,7 @@ export function BalloonPop({ ex, onDone }: ExerciseProps<'balloons'>) {
           {popped && (
             <motion.span
               className="pic"
-              style={{ position: 'absolute', left: '50%', top: '40%', fontSize: 60, x: '-50%' }}
+              style={{ position: 'absolute', left: '50%', top: '40%', fontSize: 60, x: '-50%', pointerEvents: 'none' }}
               initial={{ scale: 0 }}
               animate={{ scale: [0, 1.6, 1.2], rotate: [0, 20, 0] }}
               exit={{ opacity: 0 }}

@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { configureSpeech } from './audio/speech';
 import { setMuted } from './audio/sfx';
+import { WORLDS, findLesson, findWorld } from './content/worlds';
 import { latestWorldIndex } from './state/progress';
 import { useGame } from './state/store';
 import { AlbumScreen } from './screens/AlbumScreen';
@@ -18,7 +19,7 @@ import { type ShopTab, ShopScreen } from './screens/ShopScreen';
 export type Route =
   | { name: 'onboarding' }
   | { name: 'map'; worldIndex?: number; justCompleted?: string }
-  | { name: 'lesson'; lessonId: string }
+  | { name: 'lesson'; lessonId: string; startAt?: number }
   | { name: 'boss'; worldId: string }
   | { name: 'review' }
   | { name: 'reward'; title: string; stars?: number; coins: number; bonus?: number; streak?: number; message?: string; then: Route; retry?: Route }
@@ -29,10 +30,41 @@ export type Route =
 
 export type Nav = (route: Route) => void;
 
+/**
+ * Прямые ссылки на экраны: #/map/3, #/lesson/be-1, #/lesson/be-1/4 (сразу 4-е задание),
+ * #/boss/home, #/shop/toy, #/home, #/album, #/review, #/parent
+ */
+export function routeFromHash(hash: string): Route | null {
+  const [name, a, b] = hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
+  try {
+    switch (name) {
+      case 'map':
+        return { name: 'map', worldIndex: a !== undefined && WORLDS[Number(a)] ? Number(a) : undefined };
+      case 'lesson':
+        findLesson(a);
+        return { name: 'lesson', lessonId: a, startAt: b !== undefined ? Number(b) : undefined };
+      case 'boss':
+        findWorld(a);
+        return { name: 'boss', worldId: a };
+      case 'shop':
+        return { name: 'shop', tab: (a as ShopTab) || undefined };
+      case 'home':
+      case 'album':
+      case 'review':
+      case 'parent':
+        return { name };
+      default:
+        return null;
+    }
+  } catch {
+    return null;
+  }
+}
+
 export function App() {
   const hasProfile = useGame((s) => !!s.profile);
   const settings = useGame((s) => s.settings);
-  const [route, setRoute] = useState<Route>(hasProfile ? { name: 'map' } : { name: 'onboarding' });
+  const [route, setRoute] = useState<Route>(() => (hasProfile ? (routeFromHash(location.hash) ?? { name: 'map' }) : { name: 'onboarding' }));
   // счётчик, чтобы «Ещё раз» пересоздавал экран урока
   const [visit, setVisit] = useState(0);
 
@@ -53,7 +85,7 @@ export function App() {
       case 'map':
         return <MapScreen nav={nav} worldIndex={route.worldIndex ?? latestWorldIndex(useGame.getState())} justCompleted={route.justCompleted} />;
       case 'lesson':
-        return <LessonPlay lessonId={route.lessonId} nav={nav} />;
+        return <LessonPlay lessonId={route.lessonId} nav={nav} startAt={route.startAt} />;
       case 'boss':
         return <BossScreen worldId={route.worldId} nav={nav} />;
       case 'review':

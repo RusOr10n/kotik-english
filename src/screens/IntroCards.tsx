@@ -51,14 +51,14 @@ export function IntroCards({ words, rule, startIndex = 0, onIndexChange, onDone 
           />
         ))}
       </div>
-      <div className="row gap-24" style={{ alignItems: 'flex-end' }}>
+      <div className="row gap-24" style={{ alignItems: 'flex-end', width: '100%', justifyContent: 'center' }}>
         <div className="col center gap-8 hide-mobile">
           <div className="bubble">{word ? 'Новое слово! Послушай и повтори вслух 🗣️' : 'Сначала правило — оно короткое! 📘'}</div>
           <MyCat mood={word ? 'happy' : 'think'} size={150} />
         </div>
         <AnimatePresence mode="wait">
           {card.type === 'rule' ? (
-            <motion.div key="rule" initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ x: -200, opacity: 0 }}>
+            <motion.div key="rule" style={{ width: 'min(520px, 100%)', minWidth: 0 }} initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ x: -200, opacity: 0 }}>
               <RuleCard lines={rule!} />
             </motion.div>
           ) : (

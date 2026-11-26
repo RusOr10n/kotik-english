@@ -357,7 +357,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
               animate={{ opacity: 1, left: `${dot.x}%`, top: `${dot.y}%` }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              style={{ position: 'absolute', width: 14, height: 14, borderRadius: '50%', background: '#ff1744', boxShadow: '0 0 12px 4px rgba(255,23,68,0.6)', zIndex: 99, x: '-50%', y: '-50%' }}
+              style={{ position: 'absolute', pointerEvents: 'none', width: 14, height: 14, borderRadius: '50%', background: '#ff1744', boxShadow: '0 0 12px 4px rgba(255,23,68,0.6)', zIndex: 99, x: '-50%', y: '-50%' }}
             />
           )}
         </AnimatePresence>
@@ -367,7 +367,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
           <motion.span
             key={f.id}
             className="pic"
-            style={{ position: 'absolute', left: `${f.x}%`, top: `${f.y}%`, fontSize: 30, zIndex: 120 }}
+            style={{ position: 'absolute', left: `${f.x}%`, top: `${f.y}%`, fontSize: 30, zIndex: 120, pointerEvents: 'none' }}
             initial={{ opacity: 0, y: 0 }}
             animate={{ opacity: [0, 1, 0], y: -120 - (i % 3) * 30, x: (i % 2 ? 1 : -1) * 20 }}
             transition={{ duration: 2.4, delay: (i % 6) * 0.2 }}
