@@ -233,7 +233,7 @@ export function BossScreen({ worldId, nav }: { worldId: string; nav: Nav }) {
             <div className="col grow">
               <span>{feedback.correct ? `${feedback.text} Бам! 💥` : feedback.text}</span>
               {answer && (
-                <span style={{ fontSize: 20, fontWeight: 700 }}>
+                <span className="ru-answer">
                   {feedback.correct ? '' : 'Правильно: '}
                   <b>{answer.en}</b> — {answer.ru}
                 </span>

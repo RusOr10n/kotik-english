@@ -15,7 +15,7 @@ export function RuleCard({ lines, title = '📘 Правило' }: { lines: stri
         const ex = splitExample(line);
         if (!ex) {
           return (
-            <div key={line} style={{ fontWeight: 700, fontSize: 'clamp(15px, 3.8vw, 18px)', lineHeight: 1.4 }}>
+            <div key={line} style={{ fontWeight: 700, fontSize: 'clamp(17px, 4.4vw, 20px)', lineHeight: 1.4 }}>
               {line}
             </div>
           );
@@ -27,7 +27,7 @@ export function RuleCard({ lines, title = '📘 Правило' }: { lines: stri
             className="row gap-8"
             style={{
               textAlign: 'left', border: 'none', cursor: 'pointer', background: '#fff3c4', borderRadius: 12, alignItems: 'flex-start', overflowWrap: 'anywhere',
-              padding: '8px 12px', fontSize: 'clamp(15px, 3.8vw, 18px)', lineHeight: 1.35,
+              padding: '8px 12px', fontSize: 'clamp(17px, 4.4vw, 20px)', lineHeight: 1.35,
             }}
           >
             <span className="pic">🔊</span>

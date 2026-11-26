@@ -43,7 +43,7 @@ export function TypeWord({ ex, onDone }: ExerciseProps<'type'>) {
         </motion.div>
         <div className="col gap-8 center">
           <Speaker text={answer} />
-          {needsCaption(ex.target.pic, ex.target.ru) && <span className="subtitle">{ex.target.ru}</span>}
+          {needsCaption(ex.target.pic, ex.target.ru) && <span className="ru">{ex.target.ru}</span>}
         </div>
       </div>
       <motion.input

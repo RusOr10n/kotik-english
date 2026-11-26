@@ -25,7 +25,7 @@ export function FillGap({ ex, onDone }: ExerciseProps<'fillGap'>) {
   return (
     <div className="col center gap-24">
       <Instruction>Вставь пропущенное слово</Instruction>
-      <div className="bubble" style={{ fontSize: 24 }}>{ex.phrase.ru}</div>
+      <div className="bubble ru">{ex.phrase.ru}</div>
       <div className="row gap-12" style={{ fontSize: 'clamp(22px, 6vw, 36px)', fontWeight: 900, flexWrap: 'wrap', justifyContent: 'center' }}>
         {ex.tokens.map((t, i) =>
           i === ex.gapIndex ? (

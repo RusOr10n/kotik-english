@@ -54,7 +54,7 @@ export function SpellLetters({ ex, onDone }: ExerciseProps<'spell'>) {
         <Pic pic={ex.target.pic} size={96} />
         <div className="col gap-8 center">
           <Speaker text={ex.target.en} />
-          {needsCaption(ex.target.pic, ex.target.ru) && <span className="subtitle">{ex.target.ru}</span>}
+          {needsCaption(ex.target.pic, ex.target.ru) && <span className="ru">{ex.target.ru}</span>}
         </div>
       </div>
       <motion.div className="row" style={{ gap: 6, flexWrap: 'wrap', justifyContent: 'center' }} animate={slotsAnim}>

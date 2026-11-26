@@ -75,7 +75,7 @@ export function IntroCards({ words, rule, startIndex = 0, onIndexChange, onDone 
                 <Pic pic={card.word.pic} size={110} />
               </motion.div>
               <div style={{ fontSize: 'clamp(36px, 10vw, 52px)', fontWeight: 900, textAlign: 'center' }}>{card.word.en}</div>
-              {needsCaption(card.word.pic, card.word.ru) && <div className="subtitle">{card.word.ru}</div>}
+              {needsCaption(card.word.pic, card.word.ru) && <div className="ru">{card.word.ru}</div>}
               <Speaker text={card.word.en} />
             </motion.div>
           )}

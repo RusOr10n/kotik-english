@@ -47,7 +47,7 @@ export function SentenceBuilder({ ex, onDone }: ExerciseProps<'sentence'>) {
       <Instruction>Собери фразу по-английски</Instruction>
       <div className="row gap-16">
         <Speaker text={ex.phrase.en} />
-        <div className="bubble" style={{ fontSize: 'clamp(17px, 4.5vw, 26px)', maxWidth: 560 }}>
+        <div className="bubble ru" style={{ maxWidth: 560 }}>
           {ex.phrase.ru}
         </div>
       </div>

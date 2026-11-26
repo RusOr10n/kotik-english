@@ -191,7 +191,7 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
             <div className="col grow">
               <span>{feedback.text}</span>
               {answer && (
-                <span style={{ fontSize: 20, fontWeight: 700 }}>
+                <span className="ru-answer">
                   {feedback.correct ? '' : 'Правильно: '}
                   <b>{answer.en}</b> — {answer.ru}
                 </span>

@@ -56,7 +56,7 @@ export function BalloonPop({ ex, onDone }: ExerciseProps<'balloons'>) {
     <div className="col center gap-16 fish-box">
       <Instruction>🎈 Мини-игра: лопни шарик с правильным словом!</Instruction>
       <div className="row gap-12" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div className="bubble" style={{ fontSize: 'clamp(15px, 4vw, 20px)' }}>{current.phrase.ru}</div>
+        <div className="bubble ru">{current.phrase.ru}</div>
         <div className="pill" style={{ fontSize: 22 }}>
           🎈 {score} / {ex.rounds.length}
         </div>
