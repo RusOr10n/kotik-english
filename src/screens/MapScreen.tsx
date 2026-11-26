@@ -158,7 +158,16 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
 
       {/* заголовок мира */}
       <div className="row center" style={{ marginTop: 4, gap: mobile ? 8 : 16, padding: '0 8px', position: 'relative', zIndex: 2 }}>
-        <button className="btn white icon" onClick={() => switchWorld(-1)} disabled={worldIndex === 0}>◀</button>
+        {/* у первого мира стрелки влево нет, у последнего — вправо; место остаётся, чтобы название не съезжало */}
+        <button
+          className="btn white icon"
+          onClick={() => switchWorld(-1)}
+          disabled={worldIndex === 0}
+          aria-hidden={worldIndex === 0}
+          style={{ visibility: worldIndex === 0 ? 'hidden' : 'visible' }}
+        >
+          ◀
+        </button>
         <AnimatePresence mode="wait">
           <motion.div key={world.id} className="col center" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} style={{ minWidth: mobile ? 0 : 480, flex: mobile ? 1 : undefined }}>
             <h1 className="title" style={{ textAlign: 'center' }}>
@@ -179,6 +188,8 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
           className="btn white icon"
           onClick={() => switchWorld(1)}
           disabled={worldIndex === WORLDS.length - 1}
+          aria-hidden={worldIndex === WORLDS.length - 1}
+          style={{ visibility: worldIndex === WORLDS.length - 1 ? 'hidden' : 'visible' }}
           title={isWorldUnlocked(state, worldIndex + 1) ? '' : 'Победи босса, чтобы открыть'}
         >
           {worldIndex < WORLDS.length - 1 && !isWorldUnlocked(state, worldIndex + 1) ? '🔒' : '▶'}
@@ -285,17 +296,19 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
             onClick={() => setShowRules(false)}
           >
             <motion.div
-              className="col gap-12 scroll"
+              className="col gap-12"
               style={{ maxHeight: '100%', width: 'min(560px, 100%)', alignItems: 'stretch' }}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               onClick={(e) => e.stopPropagation()}
             >
-              {world.lessons
-                .filter((l) => l.rule?.length)
-                .map((l) => (
-                  <RuleCard key={l.id} title={l.title} lines={l.rule!} />
-                ))}
+              <div className="col gap-12 scroll scroll-fade" style={{ flex: '1 1 auto', minHeight: 0, paddingBottom: 24 }}>
+                {world.lessons
+                  .filter((l) => l.rule?.length)
+                  .map((l) => (
+                    <RuleCard key={l.id} title={l.title} lines={l.rule!} />
+                  ))}
+              </div>
               <button className="btn good" onClick={() => setShowRules(false)} style={{ alignSelf: 'center', flexShrink: 0 }}>
                 Понятно!
               </button>

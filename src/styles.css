@@ -213,8 +213,15 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
   border-width: 14px 12px 0 12px; border-style: solid;
   border-color: #fff transparent transparent transparent;
 }
+/* хвостик облачка смотрит на котика */
+.bubble.tail-left::after { left: 44px; }
+.bubble.tail-center::after { left: 50%; margin-left: -12px; }
+.bubble.tail-right::after { left: auto; right: 44px; }
 
 .kbd-hint { font-size: 14px; color: var(--ink-soft); font-weight: 700; }
+
+/* мягкое затухание снизу — подсказка, что ниже есть ещё текст */
+.scroll-fade { mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent); -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent); }
 
 .scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
@@ -236,6 +243,13 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
 .choice:hover { border-color: var(--sky); }
 .choice b { font-size: 21px; }
 .choice .muted { font-weight: 700; font-size: 15px; }
+
+.check-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-weight: 700; cursor: pointer; line-height: 1.35;
+}
+.check-row input { width: 22px; height: 22px; flex-shrink: 0; margin: 0; accent-color: var(--primary); }
+.check-row span { min-width: 0; }
 
 .steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-weight: 600; line-height: 1.4; }
 

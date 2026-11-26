@@ -114,9 +114,9 @@ export function TransferPanel() {
                     </span>
                   </button>
                   {themesCount > 0 && (
-                    <label className="row gap-8" style={{ fontWeight: 700 }}>
+                    <label className="check-row">
                       <input type="checkbox" checked={includeThemes} onChange={(e) => setIncludeThemes(e.target.checked)} />
-                      При новой игре взять с собой мои темы и словари ({themesCount})
+                      <span>При новой игре взять с собой мои темы и словари ({themesCount})</span>
                     </label>
                   )}
                   <span className="muted" style={{ fontWeight: 600 }}>

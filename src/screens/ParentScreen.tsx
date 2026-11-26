@@ -77,34 +77,46 @@ export function ParentScreen({ nav }: { nav: Nav }) {
 
         <div className="card col gap-16" style={{ padding: 20 }}>
           <h3>Настройки</h3>
-          <label className="row gap-12" style={{ flexWrap: 'wrap' }}>
-            <span style={{ minWidth: 160, fontWeight: 700 }}>Голос озвучки</span>
-            <select
-              value={state.settings.voiceName ?? ''}
-              onChange={(e) => state.updateSettings({ voiceName: e.target.value || null })}
-              style={{ fontSize: 16, padding: 6, borderRadius: 8 }}
-            >
-              <option value="">Автоматически</option>
-              {voices.map((v) => (
-                <option key={v.name} value={v.name}>
-                  {v.name} ({v.lang})
-                </option>
-              ))}
-            </select>
-            <button className="btn white small" onClick={() => speak('Hello! I am a cat. I like milk.')}>▶ Проверить</button>
-          </label>
-          {voices.length === 0 && <span className="muted">Браузер не предоставил английских голосов. Лучше всего работает Chrome или Safari.</span>}
-          <label className="row gap-12" style={{ flexWrap: 'wrap' }}>
-            <span style={{ minWidth: 160, fontWeight: 700 }}>Скорость речи: {state.settings.rate.toFixed(2)}</span>
-            <input type="range" min={0.5} max={1.2} step={0.05} value={state.settings.rate} onChange={(e) => state.updateSettings({ rate: Number(e.target.value) })} />
-          </label>
-          <label className="row gap-12" style={{ flexWrap: 'wrap' }}>
+          <div className="col gap-8">
+            <b>Голос озвучки</b>
+            <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
+              <select
+                value={state.settings.voiceName ?? ''}
+                onChange={(e) => state.updateSettings({ voiceName: e.target.value || null })}
+                style={{ flex: '1 1 220px', minWidth: 0, maxWidth: '100%', fontSize: 16, padding: '8px 10px', borderRadius: 10, border: '2px solid #e3dced', background: '#fff' }}
+              >
+                <option value="">Автоматически</option>
+                {voices.map((v) => (
+                  <option key={v.name} value={v.name}>
+                    {v.name} ({v.lang})
+                  </option>
+                ))}
+              </select>
+              <button className="btn white small" onClick={() => speak('Hello! I am a cat. I like milk.')}>
+                ▶ Проверить
+              </button>
+            </div>
+            {voices.length === 0 && <span className="muted">Браузер не предоставил английских голосов. Лучше всего работает Chrome или Safari.</span>}
+          </div>
+          <div className="col gap-8">
+            <b>Скорость речи: {state.settings.rate.toFixed(2)}</b>
+            <input
+              type="range"
+              min={0.5}
+              max={1.2}
+              step={0.05}
+              value={state.settings.rate}
+              onChange={(e) => state.updateSettings({ rate: Number(e.target.value) })}
+              style={{ width: '100%', maxWidth: 360 }}
+            />
+          </div>
+          <label className="check-row">
             <input type="checkbox" checked={state.settings.muted} onChange={(e) => state.updateSettings({ muted: e.target.checked })} />
-            <span style={{ fontWeight: 700 }}>Выключить звуковые эффекты (озвучка слов останется)</span>
+            <span>Выключить звуковые эффекты (озвучка слов останется)</span>
           </label>
-          <label className="row gap-12" style={{ flexWrap: 'wrap' }}>
+          <label className="check-row">
             <input type="checkbox" checked={state.settings.unlockAll} onChange={(e) => state.updateSettings({ unlockAll: e.target.checked })} />
-            <span style={{ fontWeight: 700 }}>Открыть все уровни (для проверки)</span>
+            <span>Открыть все уровни (для проверки)</span>
           </label>
         </div>
 

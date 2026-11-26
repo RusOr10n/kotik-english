@@ -53,6 +53,17 @@ export function HomeScreen({ nav }: { nav: Nav }) {
   const catRef = useRef(cat);
   catRef.current = cat;
 
+  // на телефоне комната едет за котиком, чтобы он и его фраза оставались на экране
+  useEffect(() => {
+    const el = scroller.current;
+    if (!mobile || !el) return;
+    const catX = (cat.x / 100) * el.scrollWidth;
+    el.scrollTo({ left: catX - el.clientWidth / 2, behavior: 'smooth' });
+  }, [mobile, cat.x]);
+
+  // у края комнаты облачко с фразой прижимается к краю, а не торчит за экран
+  const bubbleAlign: 'left' | 'center' | 'right' = cat.x < 30 ? 'left' : cat.x > 70 ? 'right' : 'center';
+
   useEffect(() => {
     alive.current = true;
     return () => {
@@ -396,13 +407,17 @@ export function HomeScreen({ nav }: { nav: Nav }) {
           <AnimatePresence>
             {bubble && (
               <motion.div
-                className="bubble"
-                style={{ position: 'absolute', bottom: '100%', left: '50%', x: '-30%', whiteSpace: 'nowrap', marginBottom: 6, zIndex: 130 }}
+                className={`bubble tail-${bubbleAlign}`}
+                style={{
+                  position: 'absolute', bottom: '100%', marginBottom: 6, zIndex: 130,
+                  width: 'max-content', maxWidth: 'min(280px, 78vw)', overflowWrap: 'anywhere',
+                  ...(bubbleAlign === 'left' ? { left: 0 } : bubbleAlign === 'right' ? { right: 0 } : { left: '50%', x: '-50%' }),
+                }}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
               >
-                <div style={{ fontSize: 22 }}>{bubble.en}</div>
+                <div style={{ fontSize: mobile ? 19 : 22 }}>{bubble.en}</div>
                 <div className="muted" style={{ fontSize: 15 }}>{bubble.ru}</div>
               </motion.div>
             )}

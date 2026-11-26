@@ -41,8 +41,9 @@ export function IntroCards({ words, rule, startIndex = 0, onIndexChange, onDone 
   });
 
   return (
-    <div className="col center gap-24 grow scroll" style={{ padding: '8px 12px 16px' }}>
-      <div className="row gap-8">
+    <div className="col grow">
+      <div className="col center gap-24 grow scroll scroll-fade" style={{ padding: '8px 12px 28px', justifyContent: 'flex-start' }}>
+      <div className="row gap-8" style={{ marginTop: 'auto', flexShrink: 0 }}>
         {cards.map((c, idx) => (
           <motion.div
             key={c.type === 'rule' ? 'rule' : c.word.id}
@@ -81,9 +82,14 @@ export function IntroCards({ words, rule, startIndex = 0, onIndexChange, onDone 
           )}
         </AnimatePresence>
       </div>
-      <button className="btn" onClick={next}>
-        {i + 1 >= cards.length ? 'Начинаем! 🚀' : card.type === 'rule' ? 'Понятно! →' : 'Дальше →'}
-      </button>
+      <div style={{ marginBottom: 'auto' }} />
+      </div>
+      {/* кнопка закреплена внизу — её видно, даже если правило длинное */}
+      <div className="center" style={{ flexShrink: 0, padding: '10px 12px max(14px, env(safe-area-inset-bottom))' }}>
+        <button className="btn" onClick={next}>
+          {i + 1 >= cards.length ? 'Начинаем! 🚀' : card.type === 'rule' ? 'Понятно! →' : 'Дальше →'}
+        </button>
+      </div>
     </div>
   );
 }
