@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { sfx } from '../audio/sfx';
 import { Cat, type CatMood } from '../components/cat/Cat';
 import { Coins } from '../components/ui/Coins';
-import { Coin, WithIcon, type IconName } from '../components/ui/Icon';
+import { Coin, Icon, WithIcon, type IconName } from '../components/ui/Icon';
 import { useIsMobile } from '../components/ui/useIsMobile';
 import { pawBurst } from '../components/ui/confetti';
 import { HomeItemArt } from '../components/home/HomeItemArt';
@@ -69,6 +69,10 @@ export function ShopScreen({ nav, initialTab = 'hat' }: { nav: Nav; initialTab?:
         </h1>
         <div className="grow" />
         <Coins value={coins} />
+        <button className="btn white small menu-btn" onClick={() => nav({ name: 'home' })} title="Домик">
+          <Icon name="home" />
+          <span className="hide-mobile">Домик</span>
+        </button>
       </div>
       <div
         className="row grow"

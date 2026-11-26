@@ -289,12 +289,12 @@ export function HomeScreen({ nav }: { nav: Nav }) {
         </h1>
         <div className="grow" />
         <Coins value={coins} />
-        <button className="btn white small menu-btn" title="Подсказка" onClick={() => setHint((h) => !h)}>
-          <Icon name="hint" />
-        </button>
         <button className="btn white small menu-btn" title="Купить вещи" onClick={() => nav({ name: 'shop', tab: 'interior' })}>
           <Icon name="shop" />
           <span className="hide-mobile">Купить вещи</span>
+        </button>
+        <button className="btn white small menu-btn" title="Подсказка" onClick={() => setHint((h) => !h)}>
+          <Icon name="hint" />
         </button>
       </div>
 
