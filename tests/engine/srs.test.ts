@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { INTERVALS, learnedCount, recordAnswer, wordsForReview } from '../../src/engine/srs';
-import { coinsFor, dailyBonusFor, starsFor } from '../../src/engine/scoring';
+import { coinsFor, dailyBonusFor, lessonMistakesFor, starsFor } from '../../src/engine/scoring';
 
 describe('srs', () => {
   it('moves word up on correct and back to box 1 on wrong', () => {
@@ -46,5 +46,29 @@ describe('scoring', () => {
     expect(dailyBonusFor(2)).toBe(15);
     expect(dailyBonusFor(7)).toBe(40);
     expect(dailyBonusFor(30)).toBe(40);
+  });
+});
+
+describe('ошибки урока и звёзды', () => {
+  const lesson = (answers: [Parameters<typeof lessonMistakesFor>[0], boolean, number][]) =>
+    starsFor(answers.reduce((sum, [kind, correct, mistakes]) => sum + lessonMistakesFor(kind, { correct, mistakes }), 0));
+
+  it('одна ошибка не снимает звезду', () => {
+    expect(lesson([['listenPick', true, 0], ['listenPick', false, 1], ['listenPick', true, 0]])).toBe(3);
+  });
+
+  it('промахи в мемори не считаются ошибками', () => {
+    expect(lesson([['memory', true, 6], ['picturePick', false, 1], ['type', true, 0]])).toBe(3);
+  });
+
+  it('буквы не туда в «Собери слово» — одна ошибка на задание', () => {
+    expect(lessonMistakesFor('spell', { correct: false, mistakes: 4 })).toBe(1);
+    expect(lesson([['spell', false, 4]])).toBe(3);
+  });
+
+  it('две-три ошибки — две звезды, больше — одна', () => {
+    expect(lesson([['type', false, 1], ['fillGap', false, 1]])).toBe(2);
+    expect(lesson([['type', false, 1], ['fillGap', false, 1], ['sentence', false, 1]])).toBe(2);
+    expect(lesson([['type', false, 1], ['fillGap', false, 1], ['sentence', false, 1], ['catchFish', true, 2]])).toBe(1);
   });
 });

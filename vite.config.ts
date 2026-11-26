@@ -7,6 +7,19 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 
+/** Номер сборки: вшивается в игру и кладётся в version.json — по нему игра узнаёт, что вышла новая версия */
+const BUILD_ID = Date.now().toString(36);
+
+function versionFile(): Plugin {
+  return {
+    name: 'kitty-version-file',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ build: BUILD_ID }) });
+    },
+  };
+}
+
 /**
  * В режиме разработки отдаёт свежую сборку игры одним HTML-файлом по адресу /__standalone.html.
  * Её использует кнопка «Перенос на другой компьютер».
@@ -39,6 +52,7 @@ function standaloneForDev(): Plugin {
 export default defineConfig({
   base: './',
   // сборка — один самодостаточный index.html: его можно открыть двойным щелчком на любом компьютере
-  plugins: [react(), viteSingleFile(), standaloneForDev()],
+  plugins: [react(), viteSingleFile(), standaloneForDev(), versionFile()],
+  define: { __BUILD_ID__: JSON.stringify(BUILD_ID) },
   test: { environment: 'node', include: ['tests/**/*.test.{ts,tsx}'] },
 } as any);

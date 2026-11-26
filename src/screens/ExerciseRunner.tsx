@@ -10,6 +10,7 @@ import { useIsMobile } from '../components/ui/useIsMobile';
 import { comfort, praise } from '../components/ui/praise';
 import { useKeys } from '../components/ui/useKeys';
 import { type Exercise, type ExerciseResult, SELF_CORRECTING } from '../engine/exercises';
+import { lessonMistakesFor } from '../engine/scoring';
 import { type SavedSession, useGame } from '../state/store';
 import { IntroCards } from './IntroCards';
 
@@ -93,7 +94,7 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
     const selfCorrecting = SELF_CORRECTING.includes(ex.kind);
     const correct = selfCorrecting || result.correct;
     if (ex.kind !== 'memory' && ex.kind !== 'catchFish' && ex.kind !== 'balloons') ex.wordIds.forEach((id) => recordWord(id, result.correct));
-    if (!result.correct || result.mistakes > 0) mistakes.current += 1;
+    mistakes.current += lessonMistakesFor(ex.kind, result);
 
     if (!correct && !requeued.current.has(ex.id)) {
       requeued.current.add(ex.id);

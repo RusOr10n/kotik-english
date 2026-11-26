@@ -63,3 +63,13 @@ describe('transfer', () => {
     expect(html.match(/<\/script>/g)).toHaveLength(1);
   });
 });
+
+describe('автообновление', () => {
+  it('перезагружается только при новой сборке и только один раз', async () => {
+    const { needsReload } = await import('../../src/pwa/update');
+    expect(needsReload('a1', 'a1', null)).toBe(false); // версия та же
+    expect(needsReload('a1', 'b2', null)).toBe(true); // вышла новая
+    expect(needsReload('a1', 'b2', 'b2')).toBe(false); // уже перезагружались ради неё — не зацикливаемся
+    expect(needsReload('a1', null, null)).toBe(false); // нет сети
+  });
+});
