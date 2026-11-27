@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { type CustomTheme, applyCustomThemes } from '../content/custom';
+import { type CustomTheme, applyCustomThemes, sanitizeThemes } from '../content/custom';
 import type { Slot } from '../content/shop';
 import type { Exercise } from '../engine/exercises';
 import { BOSS_COINS, REVIEW_COINS, coinsFor, dailyBonusFor } from '../engine/scoring';
@@ -92,6 +92,44 @@ const initial: Data = {
   customThemes: [],
   dailyBonusDay: 0,
 };
+
+const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
+/** Оставляет из сохранения только поля того же типа, что и в начальном состоянии */
+export function sanitizeData(raw: unknown): Partial<Data> {
+  if (!isObj(raw)) return {};
+  const out: Record<string, unknown> = {};
+  for (const key of Object.keys(initial) as (keyof Data)[]) {
+    const v = raw[key];
+    const def = initial[key];
+    if (v === undefined) continue;
+    if (key === 'profile') {
+      if (isObj(v) && typeof v.catName === 'string' && typeof v.fur === 'string') {
+        out.profile = { catName: v.catName.slice(0, 40), fur: v.fur.slice(0, 40) };
+      }
+    } else if (key === 'customThemes') {
+      out.customThemes = sanitizeThemes(v);
+    } else if (key === 'settings') {
+      if (isObj(v)) out.settings = { ...initial.settings, ...pickSettings(v) };
+    } else if (key === 'owned') {
+      if (Array.isArray(v)) out.owned = v.filter((x) => typeof x === 'string');
+    } else if (typeof def === 'number') {
+      if (typeof v === 'number' && Number.isFinite(v)) out[key] = v;
+    } else if (isObj(def)) {
+      if (isObj(v)) out[key] = v;
+    }
+  }
+  return out as Partial<Data>;
+}
+
+function pickSettings(v: Record<string, unknown>): Partial<Settings> {
+  const s: Partial<Settings> = {};
+  if (typeof v.rate === 'number' && Number.isFinite(v.rate)) s.rate = Math.min(1.2, Math.max(0.5, v.rate));
+  if (typeof v.voiceName === 'string' || v.voiceName === null) s.voiceName = v.voiceName;
+  if (typeof v.muted === 'boolean') s.muted = v.muted;
+  if (typeof v.unlockAll === 'boolean') s.unlockAll = v.unlockAll;
+  return s;
+}
 
 function bumpStreak(streak: Data['streak']): Data['streak'] {
   const today = dayNumber();
@@ -219,6 +257,8 @@ export const useGame = create<GameState>()(
     {
       name: STORAGE_KEY,
       version: 1,
+      // сохранение могло прийти из файла переноса — берём только поля правильного типа
+      merge: (persisted, current) => ({ ...current, ...sanitizeData(persisted) }),
       // после загрузки из localStorage подключаем темы родителя к игре
       onRehydrateStorage: () => (state) => applyCustomThemes(state?.customThemes ?? []),
     },

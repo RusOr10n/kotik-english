@@ -102,6 +102,45 @@ export function themeToWorld(theme: CustomTheme, index: number): { world: World;
   return { world, words };
 }
 
+const str = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
+
+/**
+ * Проверяет темы из сохранения (оно может прийти из файла переноса):
+ * отбрасывает всё, что не похоже на тему, и обрезает слишком длинные строки.
+ */
+export function sanitizeThemes(raw: unknown): CustomTheme[] {
+  if (!Array.isArray(raw)) return [];
+  const ids = new Set<string>();
+  const result: CustomTheme[] = [];
+  for (const t of raw.slice(0, 50)) {
+    if (!t || typeof t !== 'object') continue;
+    const o = t as Record<string, unknown>;
+    const id = str(o.id, 60);
+    if (!id || ids.has(id)) continue;
+    const words = (Array.isArray(o.words) ? o.words : [])
+      .slice(0, MAX_WORDS)
+      .map((w) => (w && typeof w === 'object' ? (w as Record<string, unknown>) : {}))
+      .map((w) => ({ en: str(w.en, 60).trim(), ru: str(w.ru, 100).trim(), pic: str(w.pic, 40) || undefined }))
+      .filter((w) => w.en && w.ru);
+    if (words.length < MIN_WORDS) continue;
+    const phrases = (Array.isArray(o.phrases) ? o.phrases : [])
+      .slice(0, 100)
+      .map((p) => (p && typeof p === 'object' ? (p as Record<string, unknown>) : {}))
+      .map((p) => ({ en: str(p.en, 200).trim(), ru: str(p.ru, 200).trim() }))
+      .filter((p) => p.en && p.ru);
+    ids.add(id);
+    result.push({
+      id,
+      name: str(o.name, 60).trim() || 'Моя тема',
+      pic: str(o.pic, 20) || '⭐',
+      words,
+      phrases,
+      createdAt: typeof o.createdAt === 'number' ? o.createdAt : 0,
+    });
+  }
+  return result;
+}
+
 /** Подключает темы родителя к игре: регистрирует слова и добавляет миры */
 export function applyCustomThemes(themes: CustomTheme[]) {
   const converted = themes.map((t, i) => themeToWorld(t, i));

@@ -1,21 +1,41 @@
 import { motion, useAnimation } from 'framer-motion';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { sfx } from '../../audio/sfx';
 import { WithIcon } from './Icon';
 
-/** Простой «замок для взрослых»: пример на умножение двузначного числа */
+const rnd = (min: number, max: number) => min + Math.floor(Math.random() * (max - min + 1));
+
+/** Пример в два действия: «17 × 5 − 14» или «23 + 16 × 7» (нужно помнить порядок действий) */
+export function makeGateTask(): { text: string; answer: number } {
+  const a = rnd(13, 29);
+  const b = rnd(4, 9);
+  const c = rnd(11, 49);
+  const product = a * b;
+  switch (rnd(0, 2)) {
+    case 0:
+      return { text: `${a} × ${b} − ${c}`, answer: product - c };
+    case 1:
+      return { text: `${a} × ${b} + ${c}`, answer: product + c };
+    default:
+      return { text: `${c} + ${a} × ${b}`, answer: c + product };
+  }
+}
+
+/** «Замок для взрослых»: пример в два действия, после ошибки — новый пример */
 export function ParentGate({ onPass, onClose }: { onPass: () => void; onClose: () => void }) {
-  const [a, b] = useMemo(() => [12 + Math.floor(Math.random() * 8), 3 + Math.floor(Math.random() * 6)], []);
+  const [task, setTask] = useState(makeGateTask);
   const [value, setValue] = useState('');
   const shake = useAnimation();
 
   const check = () => {
-    if (Number(value) === a * b) {
+    if (Number(value) === task.answer) {
       sfx.click();
       onPass();
     } else {
       sfx.wrong();
       setValue('');
+      // новый пример, чтобы ответ нельзя было подобрать перебором
+      setTask(makeGateTask());
       void shake.start({ x: [0, -10, 10, -6, 6, 0], transition: { duration: 0.35 } });
     }
   };
@@ -39,10 +59,8 @@ export function ParentGate({ onPass, onClose }: { onPass: () => void; onClose: (
           <WithIcon icon="settings" size={28}>Вход для родителей</WithIcon>
         </h2>
         <div className="subtitle" style={{ fontSize: 18, textAlign: 'center' }}>Решите пример, чтобы открыть настройки</div>
-        <motion.div className="row gap-12" animate={shake}>
-          <b style={{ fontSize: 34 }}>
-            {a} × {b} =
-          </b>
+        <motion.div className="row gap-12" animate={shake} style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+          <b style={{ fontSize: 'clamp(26px, 7vw, 34px)', whiteSpace: 'nowrap' }}>{task.text} =</b>
           <input
             className="text-input"
             style={{ width: 120, fontSize: 30, padding: '8px 12px' }}
