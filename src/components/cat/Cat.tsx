@@ -28,7 +28,7 @@ export function Cat({ fur, accessories = {}, mood: moodProp = 'idle', size = 160
   const f = FUR_BY_ID[fur] ?? FUR_BY_ID.ginger;
   const [sixSeven, setSixSeven] = useState(false);
   const taps = useRef({ count: 0, last: 0 });
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const handleClick = onClick && (() => {
@@ -51,7 +51,7 @@ export function Cat({ fur, accessories = {}, mood: moodProp = 'idle', size = 160
   const sleeping = mood === 'sleep';
 
   const bodyAnim =
-    sixSeven ? { y: [0, -4, 0], rotate: [-4, 4, -4], transition: { duration: 0.5, repeat: Infinity, ease: 'easeInOut' } }
+    sixSeven ? { y: [0, -4, 0], rotate: [-4, 4, -4], transition: { duration: 0.5, repeat: Infinity, ease: 'easeInOut' as const } }
     : happy ? { y: [0, -26, 0, -12, 0], transition: { duration: 0.9, repeat: Infinity, repeatDelay: 0.4 } }
     : mood === 'walk' ? { y: [0, -6, 0], rotate: [-3, 3, -3], transition: { duration: 0.45, repeat: Infinity } }
     : sleeping ? { scaleY: [1, 1.03, 1], transition: { duration: 2.4, repeat: Infinity } }
@@ -61,7 +61,7 @@ export function Cat({ fur, accessories = {}, mood: moodProp = 'idle', size = 160
     ? { rotate: [-18, 22, -18], transition: { duration: 0.35, repeat: Infinity } }
     : sad
       ? { rotate: 38, transition: { duration: 0.4 } }
-      : { rotate: [-8, 10, -8], transition: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' } };
+      : { rotate: [-8, 10, -8], transition: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' as const } };
 
   const headAnim =
     mood === 'think' ? { rotate: -12 } : sad ? { rotate: 0, y: 6 } : { rotate: [0, 0, 4, 0], y: 0, transition: { duration: 5, repeat: Infinity } };

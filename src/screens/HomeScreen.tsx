@@ -130,7 +130,7 @@ export function HomeScreen({ nav, initialRoom }: { nav: Nav; initialRoom?: RoomI
   };
 
   /** Фраза на тап по котику: облачко живёт 2.5 с от последнего тапа, а не от первого */
-  const tapBubbleTimer = useRef<ReturnType<typeof setTimeout>>();
+  const tapBubbleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const lastTapPhrase = useRef<Phrase | null>(null);
   const sayOnTap = (phrase: Phrase, { voice = true } = {}) => {
     if (voice) say(phrase);
