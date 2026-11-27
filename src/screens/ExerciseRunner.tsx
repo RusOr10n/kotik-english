@@ -6,7 +6,7 @@ import type { Word } from '../content/types';
 import { Cat, type CatMood } from '../components/cat/Cat';
 import { ExerciseView, answerOf } from '../components/exercises/ExerciseView';
 import { ProgressBar } from '../components/ui/ProgressBar';
-import { useIsMobile } from '../components/ui/useIsMobile';
+import { useIsMobile, useIsShort } from '../components/ui/useIsMobile';
 import { comfort, praise } from '../components/ui/praise';
 import { useKeys } from '../components/ui/useKeys';
 import { type Exercise, type ExerciseResult, SELF_CORRECTING } from '../engine/exercises';
@@ -44,7 +44,10 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
   const [index, setIndex] = useState(resume?.index ?? 0);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [mood, setMood] = useState<CatMood>('idle');
-  const mobile = useIsMobile();
+  // на телефоне (в любой ориентации) котик сидит в верхней панели, а не внизу слева
+  const narrow = useIsMobile();
+  const short = useIsShort();
+  const mobile = narrow || short;
   const mistakes = useRef(resume?.mistakes ?? 0);
   const requeued = useRef(new Set<string>(resume?.requeued ?? []));
   const startedAt = useRef(Date.now() - (resume?.elapsedMs ?? 0));
@@ -158,7 +161,7 @@ export function ExerciseRunner({ title, background, sessionKey, exercises, intro
       {phase === 'intro' && (intro?.length || rule?.length) ? (
         <IntroCards words={intro ?? []} rule={rule} startIndex={introIndex} onIndexChange={setIntroIndex} onDone={() => setPhase('play')} />
       ) : (
-        <div className="grow scroll" style={{ display: 'flex', flexDirection: 'column', paddingBottom: mobile ? 12 : feedback ? 24 : 110 }}>
+        <div className="grow scroll" style={{ display: 'flex', flexDirection: 'column', paddingBottom: short ? 6 : mobile ? 12 : feedback ? 24 : 110 }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={ex.id}

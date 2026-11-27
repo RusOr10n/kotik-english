@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from 'react';
 import { speak } from '../../audio/speech';
 import { sfx } from '../../audio/sfx';
 import { normalize } from '../../engine/text';
+import { useIsShort } from '../ui/useIsMobile';
 import { Instruction } from './Instruction';
 import type { ExerciseProps } from './types';
 
@@ -17,6 +18,7 @@ export function BalloonPop({ ex, onDone }: ExerciseProps<'balloons'>) {
   const mistakes = useRef(0);
   const current = ex.rounds[Math.min(round, ex.rounds.length - 1)];
   const answer = current.tokens[current.gapIndex];
+  const short = useIsShort();
 
   // каждому шарику — своя дорожка, скорость и цвет
   const balloons = useMemo(
@@ -55,21 +57,23 @@ export function BalloonPop({ ex, onDone }: ExerciseProps<'balloons'>) {
   return (
     <div className="col center gap-16 fish-box">
       <Instruction>🎈 Мини-игра: лопни шарик с правильным словом!</Instruction>
+      <div className="mini-body">
+      <div className="mini-side">
       <div className="row gap-12" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
         <div className="bubble ru">{current.phrase.ru}</div>
-        <div className="pill" style={{ fontSize: 22 }}>
+        <div className="pill" style={{ fontSize: short ? 18 : 22 }}>
           🎈 {score} / {ex.rounds.length}
         </div>
       </div>
       {/* фраза с пропуском */}
-      <div className="row" style={{ gap: 10, fontSize: 'clamp(22px, 6vw, 34px)', fontWeight: 900, flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div className="row" style={{ gap: short ? 6 : 10, rowGap: 4, fontSize: short ? 22 : 'clamp(22px, 6vw, 34px)', fontWeight: 900, flexWrap: 'wrap', justifyContent: 'center' }}>
         {current.tokens.map((t, i) =>
           i === current.gapIndex ? (
             <motion.span
               key={`${round}-${i}`}
               className="center"
               style={{
-                minWidth: 90, height: 52, padding: '0 12px', borderRadius: 14, background: '#fff',
+                minWidth: short ? 70 : 90, height: short ? 40 : 52, padding: '0 12px', borderRadius: 14, background: '#fff',
                 border: `4px dashed ${popped ? 'var(--good)' : '#cfc5e0'}`, color: popped ? 'var(--good-dark)' : '#cfc5e0',
               }}
               animate={popped ? { scale: [1.4, 1] } : { scale: [1, 1.06, 1] }}
@@ -82,10 +86,12 @@ export function BalloonPop({ ex, onDone }: ExerciseProps<'balloons'>) {
           ),
         )}
       </div>
+      </div>
 
       <div
+        className="mini-field"
         style={{
-          position: 'relative', width: '100%', height: 'min(300px, 45dvh)', borderRadius: 28, overflow: 'hidden',
+          position: 'relative', width: '100%', height: 'min(300px, 45dvh)', borderRadius: short ? 20 : 28, overflow: 'hidden',
           background: 'linear-gradient(180deg, #bfe8ff 0%, #e8f7ff 70%, #c8f0c0 70%, #a8e29b 100%)',
         }}
       >
@@ -122,7 +128,7 @@ export function BalloonPop({ ex, onDone }: ExerciseProps<'balloons'>) {
                 <div
                   className="center"
                   style={{
-                    width: 'clamp(84px, 22vw, 112px)', height: 'clamp(100px, 26vw, 130px)', borderRadius: '50% 50% 48% 48%',
+                    width: short ? 88 : 'clamp(84px, 22vw, 112px)', height: short ? 102 : 'clamp(100px, 26vw, 130px)', borderRadius: '50% 50% 48% 48%',
                     background: `radial-gradient(circle at 35% 30%, rgba(255,255,255,0.7) 0 12%, ${b.color} 13%)`,
                     color: '#fff', fontWeight: 900, fontSize: 'clamp(17px, 4.5vw, 22px)', textShadow: '0 2px 0 rgba(0,0,0,0.2)',
                     boxShadow: 'inset -8px -10px 0 rgba(0,0,0,0.08)',
@@ -130,7 +136,7 @@ export function BalloonPop({ ex, onDone }: ExerciseProps<'balloons'>) {
                 >
                   {b.text}
                 </div>
-                <div style={{ width: 2, height: 40, background: '#9e9e9e' }} />
+                <div style={{ width: 2, height: short ? 24 : 40, background: '#9e9e9e' }} />
               </motion.div>
             );
           })}
@@ -149,6 +155,7 @@ export function BalloonPop({ ex, onDone }: ExerciseProps<'balloons'>) {
             </motion.span>
           )}
         </AnimatePresence>
+      </div>
       </div>
     </div>
   );

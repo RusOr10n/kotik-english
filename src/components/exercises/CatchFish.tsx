@@ -4,6 +4,7 @@ import { speak } from '../../audio/speech';
 import { sfx } from '../../audio/sfx';
 import { Pic } from '../ui/Pic';
 import { Speaker } from '../ui/Speaker';
+import { useIsShort } from '../ui/useIsMobile';
 import { Instruction } from './Instruction';
 import type { ExerciseProps } from './types';
 
@@ -16,6 +17,7 @@ export function CatchFish({ ex, onDone }: ExerciseProps<'catchFish'>) {
   const [score, setScore] = useState(0);
   const mistakes = useRef(0);
   const current = ex.rounds[Math.min(round, ex.rounds.length - 1)];
+  const short = useIsShort();
 
   // у каждой рыбки своя скорость, направление и задержка
   const fishes = useMemo(
@@ -58,18 +60,20 @@ export function CatchFish({ ex, onDone }: ExerciseProps<'catchFish'>) {
   return (
     <div className="col center gap-16 fish-box">
       <Instruction>🎣 Мини-игра: поймай рыбку с нужным словом!</Instruction>
-      <div className="row gap-24">
-        <div className="card row gap-12" style={{ padding: '10px 20px' }}>
-          <Pic pic={current.target.pic} size={60} />
+      <div className="mini-body">
+      <div className="mini-side">
+        <div className="card row gap-12" style={{ padding: short ? '8px 14px' : '10px 20px' }}>
+          <Pic pic={current.target.pic} size={short ? 44 : 60} />
           <Speaker text={current.target.en} />
         </div>
-        <div className="pill" style={{ fontSize: 24 }}>
+        <div className="pill" style={{ fontSize: short ? 18 : 24 }}>
           🐟 {score} / {ex.rounds.length}
         </div>
       </div>
       <div
+        className="mini-field"
         style={{
-          position: 'relative', width: '100%', height: 'min(330px, 52dvh)', borderRadius: 28, overflow: 'hidden',
+          position: 'relative', width: '100%', height: 'min(330px, 52dvh)', borderRadius: short ? 20 : 28, overflow: 'hidden',
           background: 'linear-gradient(180deg, #8fdcff 0%, #4aa8e8 60%, #2d7fc9 100%)',
           boxShadow: 'inset 0 -10px 30px rgba(0,0,40,0.2)',
         }}
@@ -94,7 +98,7 @@ export function CatchFish({ ex, onDone }: ExerciseProps<'catchFish'>) {
             return (
               <motion.div
                 key={`${round}-${f.word.id}`}
-                style={{ position: 'absolute', top: `${f.lane}%`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                style={{ position: 'absolute', top: `${short ? f.lane * 0.9 - 10 : f.lane}%`, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                 initial={{ left: f.leftToRight ? '-18%' : '105%' }}
                 animate={
                   isCaught
@@ -112,12 +116,13 @@ export function CatchFish({ ex, onDone }: ExerciseProps<'catchFish'>) {
                 onClick={() => click(f.word.id)}
                 whileHover={{ scale: 1.12 }}
               >
-                <span className="pill" style={{ fontSize: 'clamp(15px, 4vw, 22px)', padding: '4px 12px' }}>{f.word.en}</span>
-                <span className="pic" style={{ fontSize: 'clamp(40px, 11vw, 60px)', transform: f.leftToRight ? 'scaleX(-1)' : 'none' }}>🐟</span>
+                <span className="pill" style={{ fontSize: short ? 16 : 'clamp(15px, 4vw, 22px)', padding: short ? '2px 10px' : '4px 12px' }}>{f.word.en}</span>
+                <span className="pic" style={{ fontSize: short ? 40 : 'clamp(40px, 11vw, 60px)', transform: f.leftToRight ? 'scaleX(-1)' : 'none' }}>🐟</span>
               </motion.div>
             );
           })}
         </AnimatePresence>
+      </div>
       </div>
     </div>
   );

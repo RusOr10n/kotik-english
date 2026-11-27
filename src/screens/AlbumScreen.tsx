@@ -4,7 +4,7 @@ import { speak } from '../audio/speech';
 import { Cat } from '../components/cat/Cat';
 import { Pic } from '../components/ui/Pic';
 import { WithIcon } from '../components/ui/Icon';
-import { useIsMobile } from '../components/ui/useIsMobile';
+import { useIsMobile, useIsShort } from '../components/ui/useIsMobile';
 import { getWord } from '../content/words';
 import { WORLDS } from '../content/worlds';
 import { LEARNED_BOX, learnedCount } from '../engine/srs';
@@ -16,6 +16,7 @@ export function AlbumScreen({ nav }: { nav: Nav }) {
   const [tab, setTab] = useState<'friends' | 'words'>('friends');
   const seen = Object.keys(srs).length;
   const mobile = useIsMobile();
+  const short = useIsShort();
 
   return (
     <div className="screen" style={{ background: 'linear-gradient(160deg, #fffbe6 0%, #e6f6ff 100%)' }}>
@@ -35,16 +36,22 @@ export function AlbumScreen({ nav }: { nav: Nav }) {
 
       {tab === 'friends' ? (
         <div className="grow scroll" style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 32px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(3, 260px)', gap: mobile ? 10 : 24, alignContent: 'start', padding: mobile ? '0 10px' : 0, width: mobile ? '100%' : undefined }}>
+          {/* столько колонок, сколько влезает (на компьютере — 3 по ~260 px) */}
+          <div
+            style={{
+              display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : `repeat(auto-fill, minmax(${short ? 170 : 220}px, 1fr))`,
+              gap: mobile || short ? 10 : 24, alignContent: 'start', padding: mobile ? '0 10px' : '0 16px', width: mobile ? '100%' : 'min(100%, 860px)',
+            }}
+          >
             {WORLDS.map((w, i) => {
               const has = !!bossDefeated[w.id];
               return (
-                <motion.div key={w.id} className="card col center" style={{ padding: 16, gap: 6 }} initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: i * 0.08 }}>
+                <motion.div key={w.id} className="card col center" style={{ padding: short ? 10 : 16, gap: short ? 2 : 6, textAlign: 'center' }} initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: i * 0.08 }}>
                   <div style={{ filter: has ? 'none' : 'brightness(0) opacity(0.15)' }}>
-                    <Cat fur={w.friend.fur} accessories={w.friend.accessories} size={mobile ? 80 : 120} mood={has ? 'idle' : 'sleep'} />
+                    <Cat fur={w.friend.fur} accessories={w.friend.accessories} size={mobile || short ? 70 : 120} mood={has ? 'idle' : 'sleep'} />
                   </div>
-                  <b style={{ fontSize: 22 }}>{has ? w.friend.name : '???'}</b>
-                  <span className="muted" style={{ fontWeight: 700 }}>
+                  <b style={{ fontSize: short ? 18 : 22 }}>{has ? w.friend.name : '???'}</b>
+                  <span className="muted" style={{ fontWeight: 700, fontSize: short ? 14 : undefined }}>
                     {has ? `Из мира «${w.name}»` : `Победи босса: ${w.boss.name}`}
                   </span>
                 </motion.div>

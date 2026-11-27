@@ -6,6 +6,7 @@ import type { Word } from '../content/types';
 import { MyCat } from '../components/cat/MyCat';
 import { Pic, needsCaption } from '../components/ui/Pic';
 import { Speaker } from '../components/ui/Speaker';
+import { useIsShort } from '../components/ui/useIsMobile';
 import { useKeys } from '../components/ui/useKeys';
 import { RuleCard } from './RuleCard';
 
@@ -19,6 +20,7 @@ export function IntroCards({ words, rule, startIndex = 0, onIndexChange, onDone 
   const [i, setI] = useState(Math.min(startIndex, cards.length - 1));
   const card = cards[i];
   const word = card.type === 'word' ? card.word : null;
+  const short = useIsShort();
 
   useEffect(() => {
     if (!word) return;
@@ -42,7 +44,7 @@ export function IntroCards({ words, rule, startIndex = 0, onIndexChange, onDone 
 
   return (
     <div className="col grow">
-      <div className="col center gap-24 grow scroll scroll-fade" style={{ padding: '8px 12px 28px', justifyContent: 'flex-start' }}>
+      <div className="col center grow scroll scroll-fade" style={{ padding: short ? '4px 12px 12px' : '8px 12px 28px', justifyContent: 'flex-start', gap: short ? 12 : 24 }}>
       <div className="row gap-8" style={{ marginTop: 'auto', flexShrink: 0 }}>
         {cards.map((c, idx) => (
           <motion.div
@@ -55,7 +57,7 @@ export function IntroCards({ words, rule, startIndex = 0, onIndexChange, onDone 
       <div className="row gap-24" style={{ alignItems: 'flex-end', width: '100%', justifyContent: 'center' }}>
         <div className="col center gap-8 hide-mobile">
           <div className="bubble">{word ? 'Новое слово! Послушай и повтори вслух 🗣️' : 'Сначала правило — оно короткое!'}</div>
-          <MyCat mood={word ? 'happy' : 'think'} size={150} />
+          <MyCat mood={word ? 'happy' : 'think'} size={short ? 90 : 150} />
         </div>
         <AnimatePresence mode="wait">
           {card.type === 'rule' ? (
@@ -65,19 +67,22 @@ export function IntroCards({ words, rule, startIndex = 0, onIndexChange, onDone 
           ) : (
             <motion.div
               key={card.word.id}
-              className="card col center gap-16"
-              style={{ width: 380, maxWidth: '100%', padding: 'clamp(18px, 5vw, 32px)' }}
+              // в альбомной ориентации карточка горизонтальная: картинка слева, слово и перевод справа
+              className={short ? 'card row' : 'card col center gap-16'}
+              style={{ width: short ? 'auto' : 380, minWidth: short ? 320 : undefined, maxWidth: '100%', padding: short ? '14px 28px' : 'clamp(18px, 5vw, 32px)', gap: short ? 24 : undefined }}
               initial={{ x: 200, rotate: 10, opacity: 0 }}
               animate={{ x: 0, rotate: 0, opacity: 1 }}
               exit={{ x: -200, rotate: -10, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 160, damping: 16 }}
             >
               <motion.div animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
-                <Pic pic={card.word.pic} size={110} />
+                <Pic pic={card.word.pic} size={short ? 90 : 110} />
               </motion.div>
-              <div style={{ fontSize: 'clamp(36px, 10vw, 52px)', fontWeight: 900, textAlign: 'center' }}>{card.word.en}</div>
-              {needsCaption(card.word.pic, card.word.ru) && <div className="ru">{card.word.ru}</div>}
-              <Speaker text={card.word.en} />
+              <div className="col center" style={{ display: short ? 'flex' : 'contents', gap: 6 }}>
+                <div style={{ fontSize: short ? 40 : 'clamp(36px, 10vw, 52px)', fontWeight: 900, textAlign: 'center', lineHeight: 1.1 }}>{card.word.en}</div>
+                {needsCaption(card.word.pic, card.word.ru) && <div className="ru">{card.word.ru}</div>}
+                <Speaker text={card.word.en} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -85,7 +90,7 @@ export function IntroCards({ words, rule, startIndex = 0, onIndexChange, onDone 
       <div style={{ marginBottom: 'auto' }} />
       </div>
       {/* кнопка закреплена внизу — её видно, даже если правило длинное */}
-      <div className="center" style={{ flexShrink: 0, padding: '10px 12px max(14px, env(safe-area-inset-bottom))' }}>
+      <div className="center" style={{ flexShrink: 0, padding: short ? '4px 12px max(8px, env(safe-area-inset-bottom))' : '10px 12px max(14px, env(safe-area-inset-bottom))' }}>
         <button className="btn" onClick={next}>
           {i + 1 >= cards.length ? 'Начинаем! 🚀' : card.type === 'rule' ? 'Понятно! →' : 'Дальше →'}
         </button>

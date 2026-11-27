@@ -53,16 +53,15 @@ export function SentenceBuilder({ ex, onDone }: ExerciseProps<'sentence'>) {
       </div>
       <LayoutGroup>
         <div
-          className="row gap-8"
+          className="row gap-8 placed"
           style={{
-            minHeight: 78, width: '100%', flexWrap: 'wrap', justifyContent: 'center',
+            width: '100%', flexWrap: 'wrap', justifyContent: 'center',
             borderBottom: `4px solid ${answered === null ? '#d9cfe8' : answered ? 'var(--good)' : 'var(--bad)'}`,
-            padding: '10px 0',
           }}
         >
           {placed.map(tile)}
         </div>
-        <div className="row gap-8" style={{ minHeight: 70, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div className="row gap-8 pool" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
           {ex.tiles.map((_, i) => (placed.includes(i) ? null : tile(i)))}
         </div>
       </LayoutGroup>

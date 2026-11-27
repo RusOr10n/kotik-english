@@ -268,6 +268,19 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
 .pic-card { width: 190px; height: 190px; }
 .only-mobile { display: none; }
 
+/* Мини-игры: сверху подсказка, под ней счёт/слово и игровое поле */
+.mini-body { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+.mini-side { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; }
+
+/* Собери фразу: строка ответа и запас слов */
+.sentence-box .placed { min-height: 78px; padding: 10px 0; }
+.sentence-box .pool { min-height: 70px; }
+
+/* Кнопки меню на карте: подписи только на широком экране, иначе не помещаются */
+@media (max-width: 1000px) {
+  .hide-narrow { display: none !important; }
+}
+
 /* ---------- Телефон ---------- */
 @media (max-width: 700px) {
   .title { font-size: 24px; }
@@ -318,12 +331,66 @@ h1, h2, h3 { margin: 0; font-weight: 900; }
   .modal { padding: 18px !important; }
 }
 
-/* Невысокий экран: телефон в альбомной ориентации */
-@media (max-height: 520px) {
+/* Невысокий экран: телефон в альбомной ориентации.
+   По высоте ~320 px: панель сверху, задание и плашка «Дальше» должны помещаться без прокрутки. */
+@media (max-height: 520px) and (orientation: landscape) {
   .title { font-size: 22px; }
-  .speaker.big { width: 70px; height: 70px; font-size: 32px; }
-  .grid-pics > .option { height: 96px; }
-  .memory-card { height: 70px; }
-  .pic-card { width: 110px; height: 110px; }
-  .runner-cat { transform: scale(0.55); transform-origin: bottom left; }
+  .topbar { padding: 6px 14px; gap: 10px; }
+  .btn { font-size: 18px; padding: 9px 20px; border-radius: 15px; }
+  .btn.small { font-size: 15px; padding: 7px 12px; }
+  .btn.icon { padding: 5px 10px; font-size: 20px; }
+  .progress { height: 16px; }
+  .pill { font-size: 16px; padding: 4px 12px; }
+  h2 { font-size: 20px !important; }
+  .kbd-hint { display: none; }
+
+  /* задание: меньше отступы и элементы */
+  .exercise-wrap { padding: 0 12px; }
+  .exercise-wrap .gap-24 { gap: 10px; }
+  .exercise-wrap .gap-16 { gap: 8px; }
+  .bubble { font-size: 16px; padding: 8px 12px; }
+  .bubble::after { bottom: -10px; border-width: 10px 9px 0 9px; }
+  .ru { font-size: 18px; }
+  .bubble.ru { font-size: 19px; }
+  .speaker { width: 50px; height: 50px; font-size: 24px; box-shadow: 0 4px 0 #3e9fdc; }
+  .speaker.big { width: 58px; height: 58px; font-size: 28px; }
+  .option { font-size: 20px; padding: 8px 14px; border-radius: 16px; border-width: 3px; box-shadow: 0 4px 0 #e3dced; }
+  .option .key { top: 3px; left: 7px; font-size: 11px; }
+  .grid-pics { grid-template-columns: repeat(4, minmax(0, 120px)); gap: 12px; width: auto; max-width: 100%; }
+  .grid-pics > .option { height: 76px; }
+  .grid-pics > .option .pic { font-size: 46px !important; }
+  /* варианты-слова в один ряд: по высоте так влезает больше */
+  .grid-words { grid-template-columns: repeat(4, minmax(0, 170px)); gap: 10px; width: auto; max-width: 100%; }
+  .memory-grid { grid-template-columns: repeat(8, minmax(0, 88px)); gap: 8px; }
+  .memory-card { height: 72px; }
+  .memory-face { font-size: 14px; }
+  .pic-card { width: 80px; height: 80px; }
+  .pic-card .pic { font-size: 54px !important; }
+  .pic-card .pic-text { font-size: 20px !important; }
+  .tile { font-size: 19px; padding: 6px 12px; border-radius: 12px; }
+  .letter, .slot { width: 40px; height: 46px; font-size: 24px; border-radius: 10px; }
+  .text-input { font-size: 24px; padding: 8px 14px; width: 300px; }
+
+  /* заголовки разделов (Магазин, Альбом, Домик, Для родителей) */
+  .topbar h1 { font-size: 20px !important; }
+  .topbar h1 svg { width: 24px; height: 24px; }
+  .menu-btn { width: 40px; height: 40px; padding: 0 !important; border-radius: 13px !important; }
+  .menu-btn svg { width: 24px; height: 24px; }
+
+  /* собери фразу: ниже строки, чтобы влезла кнопка «Проверить» */
+  .sentence-box .placed { min-height: 52px; padding: 4px 0; }
+  .sentence-box .pool { min-height: 44px; }
+  .sentence-box.gap-24 { gap: 8px; }
+
+  /* мини-игры: счёт и слово слева, игровое поле справа на всю высоту */
+  .mini-body { flex-direction: row; align-items: stretch; gap: 12px; }
+  .mini-side { flex-direction: column; flex-wrap: nowrap; width: 200px; flex-shrink: 0; gap: 8px; }
+  .mini-field { flex: 1; min-width: 0; height: max(150px, calc(var(--app-h, 100dvh) - 104px)) !important; }
+
+  /* плашка «Дальше / Понятно» — в одну строку и пониже */
+  .feedback { padding: 8px 18px max(8px, env(safe-area-inset-bottom)) 18px !important; font-size: 18px; gap: 14px; }
+  .feedback { flex-wrap: nowrap; }
+  .feedback > .col { flex: 1 1 auto; }
+  .feedback .btn { width: auto; padding: 8px 18px; white-space: nowrap; }
+  .ru-answer { font-size: 16px; }
 }

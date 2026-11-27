@@ -4,6 +4,10 @@
  * проходит по всем экранам и типам заданий, делает скриншоты и ищет элементы, вылезающие за экран.
  *
  * Запуск: npm run check:mobile   (результат — в папке mobile-screens/)
+ *
+ * Только часть проверки (через запятую, ищется по куску названия):
+ *   npm run check:mobile -- --vp=landscape                       — только альбомные размеры
+ *   npm run check:mobile -- --vp=landscape --only=onboarding,ex-,album,map
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -19,7 +23,20 @@ const VIEWPORTS = [
   { name: '360x740-android-small', width: 360, height: 740 },
   { name: '412x915-android', width: 412, height: 915 },
   { name: '800x360-landscape', width: 800, height: 360 },
+  // маленький телефон боком, с адресной строкой браузера — самый тесный случай
+  { name: '667x320-landscape-small', width: 667, height: 320 },
 ];
+
+const arg = (name) =>
+  process.argv
+    .find((a) => a.startsWith(`--${name}=`))
+    ?.slice(name.length + 3)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+const VP_FILTER = arg('vp');
+const ONLY = arg('only');
+const matches = (name, filter) => !filter?.length || filter.some((f) => name.includes(f));
 
 /** Сохранение для проверки: котик, монеты, покупки, всё открыто */
 const SAVE = {
@@ -39,7 +56,7 @@ const SAVE = {
   },
 };
 
-/** Ищет элементы, которые торчат за правый/левый край экрана и при этом не обрезаны контейнером */
+/** Ищет элементы, которые торчат за правый/левый край экрана и при этом не обрезаны контейнером, и задания, не влезающие по высоте */
 function findOverflow() {
   const W = window.innerWidth;
   const clippedBy = (el) => {
@@ -67,11 +84,31 @@ function findOverflow() {
     if (parent && (parent.right > W + 2 || parent.left < -2) && !clippedBy(el.parentElement)) continue; // сообщаем только верхний
     bad.push(`${describe(el)} → left ${Math.round(r.left)}, right ${Math.round(r.right)} (экран ${W})`);
   }
+  // задание должно помещаться по высоте целиком, без прокрутки: ребёнок не догадается листать
+  const wrap = document.querySelector('.exercise-wrap');
+  const box = wrap?.parentElement;
+  if (box && box.scrollHeight > box.clientHeight + 4) {
+    bad.push(`задание не помещается по высоте: ${box.scrollHeight} px при доступных ${box.clientHeight} px`);
+  }
+  // кнопка ниже края экрана, и долистать до неё нельзя (нет прокручиваемого контейнера)
+  const H = window.innerHeight;
+  const scrollable = (el) => {
+    for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
+      const oy = getComputedStyle(p).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight + 2) return true;
+    }
+    return false;
+  };
+  for (const el of document.querySelectorAll('button')) {
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height || r.bottom <= H + 2 || r.top >= H * 3) continue;
+    if (scrollable(el)) continue;
+    bad.push(`кнопка за нижним краем экрана: ${describe(el)} → bottom ${Math.round(r.bottom)} (экран ${H})`);
+  }
   return { pageScrollWidth: document.documentElement.scrollWidth, width: W, bad: bad.slice(0, 10) };
 }
 
 async function main() {
-  fs.rmSync(OUT, { recursive: true, force: true });
   let browser;
   try {
     browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -81,8 +118,12 @@ async function main() {
   }
   const report = {};
 
-  for (const vp of VIEWPORTS) {
+  const viewports = VIEWPORTS.filter((v) => matches(v.name, VP_FILTER));
+  if (!viewports.length) console.log('Нет размеров экрана под фильтр --vp:', VP_FILTER.join(', '));
+  for (const vp of viewports) {
     const dir = path.join(OUT, vp.name);
+    // старые скриншоты удаляем только для проверяемого размера, остальные остаются
+    fs.rmSync(dir, { recursive: true, force: true });
     fs.mkdirSync(dir, { recursive: true });
     const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, isMobile: true, hasTouch: true, deviceScaleFactor: 1, locale: 'ru-RU' });
     await ctx.route('**/*', (route) => {
@@ -108,11 +149,14 @@ async function main() {
       await page.waitForTimeout(1200);
     };
     const shot = async (name) => {
+      if (!want(name)) return;
       const file = `${String(++n).padStart(2, '0')}-${name}.png`;
       await page.screenshot({ path: path.join(dir, file) });
       const overflow = await page.evaluate(findOverflow);
       results.push({ file, ...overflow });
     };
+    /** нужен ли блок экранов при фильтре --only */
+    const want = (...names) => names.some((name) => matches(name, ONLY));
     const click = async (text) => {
       const el = page.getByText(text, { exact: false }).first();
       if (await el.count()) await el.click({ timeout: 2000 }).catch(() => {});
@@ -120,12 +164,15 @@ async function main() {
     };
 
     // онбординг
-    await open('', null);
-    await shot('onboarding');
-    await click('Начать приключение');
-    await shot('onboarding-fur');
+    if (want('onboarding', 'onboarding-fur')) {
+      await open('', null);
+      await shot('onboarding');
+      await click('Начать приключение');
+      await shot('onboarding-fur');
+    }
 
     // карта: тематический мир, грамматический мир и его правила
+    if (want('map-home', 'map-home-bottom', 'map-far-world', 'map-grammar', 'map-rules', 'map-lesson-card')) {
     await open('#/map/0');
     await shot('map-home');
     await page.evaluate(() => document.querySelector('.screen')?.scrollTo(0, 99999));
@@ -141,16 +188,19 @@ async function main() {
     await page.locator('button', { hasText: /^3$/ }).first().click().catch(() => {});
     await page.waitForTimeout(600);
     await shot('map-lesson-card');
+    }
 
     // знакомство: правило и слово
-    await open('#/lesson/be-1');
-    await shot('intro-rule');
-    await click('Понятно');
-    await shot('intro-word');
+    if (want('intro-rule', 'intro-word')) {
+      await open('#/lesson/be-1');
+      await shot('intro-rule');
+      await click('Понятно');
+      await shot('intro-word');
+    }
 
     // все задания уроков — по одному скриншоту на каждый тип
     const seen = new Set();
-    for (const lessonId of ['home-3', 'be-2', 'plurals-3', 'market-5']) {
+    for (const lessonId of want('ex-home-3', 'ex-be-2', 'ex-plurals-3', 'ex-market-5') ? ['home-3', 'be-2', 'plurals-3', 'market-5'] : []) {
       for (let i = 0; i < 20; i++) {
         await open(`#/lesson/${lessonId}/${i}`);
         const title = ((await page.locator('h2').first().textContent().catch(() => '')) || '').trim();
@@ -160,17 +210,21 @@ async function main() {
       }
     }
     // ответ с подсказкой внизу (неправильный выбор)
-    await open('#/lesson/home-1/0');
-    await page.locator('.option').nth(0).click().catch(() => {});
-    await page.locator('.option').nth(1).click().catch(() => {});
-    await page.waitForTimeout(900);
-    await shot('ex-feedback');
+    if (want('ex-feedback')) {
+      await open('#/lesson/home-1/0');
+      await page.locator('.option').nth(0).click().catch(() => {});
+      await page.locator('.option').nth(1).click().catch(() => {});
+      await page.waitForTimeout(900);
+      await shot('ex-feedback');
+    }
 
     // босс
-    await open('#/boss/be');
-    await shot('boss-intro');
-    await click('В бой');
-    await shot('boss-fight');
+    if (want('boss-intro', 'boss-fight')) {
+      await open('#/boss/be');
+      await shot('boss-intro');
+      await click('В бой');
+      await shot('boss-fight');
+    }
 
     // остальные экраны
     for (const [hash, name] of [
@@ -181,22 +235,31 @@ async function main() {
       ['#/review', 'review'],
       ['#/parent', 'parent'],
     ]) {
+      if (!want(name)) continue;
       await open(hash);
       await shot(name);
     }
+    if (want('shop-scrolled')) {
     await open('#/shop/toy');
     await page.locator('.scroll').last().evaluate((el) => el.scrollTo(0, 99999)).catch(() => {});
     await page.waitForTimeout(400);
     await shot('shop-scrolled');
-    await open('#/home');
-    await click('💡');
-    await shot('home-hint');
-    await open('#/map/0');
-    await click('⚙️');
-    await shot('parent-gate');
-    await open('#/map/0');
-    await click('📲');
-    await shot('install-help');
+    }
+    if (want('home-hint')) {
+      await open('#/home');
+      await click('💡');
+      await shot('home-hint');
+    }
+    if (want('parent-gate')) {
+      await open('#/map/0');
+      await click('⚙️');
+      await shot('parent-gate');
+    }
+    if (want('install-help')) {
+      await open('#/map/0');
+      await click('📲');
+      await shot('install-help');
+    }
 
     report[vp.name] = { errors, results };
     await ctx.close();
@@ -217,7 +280,7 @@ async function main() {
     }
     if (errors.length) console.log('  Ошибки JS:', errors);
   }
-  console.log(`\nСкриншоты: ${OUT}\nЭкранов с вылезающими элементами: ${problems}`);
+  console.log(`\nСкриншоты: ${OUT}\nЭкранов, где что-то вылезает или не помещается: ${problems}`);
 }
 
 main().catch((e) => {

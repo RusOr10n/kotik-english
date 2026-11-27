@@ -131,7 +131,7 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
         <div className="grow" />
         <button className="btn white small menu-btn" onClick={() => nav({ name: 'review' })} title="Повторение" disabled={!reviewWords.length && !state.savedSessions.review} style={{ position: 'relative' }}>
           <Icon name="review" />
-          <span className="hide-mobile">{state.savedSessions.review ? 'Продолжить повторение' : 'Повторение'}</span>
+          <span className="hide-narrow">{state.savedSessions.review ? 'Продолжить повторение' : 'Повторение'}</span>
           {dueCount > 0 && (
             <span style={{ position: 'absolute', top: -8, right: -8, background: 'var(--bad)', color: '#fff', borderRadius: 12, padding: '2px 8px', fontSize: 14 }}>
               {dueCount}
@@ -140,15 +140,15 @@ export function MapScreen({ nav, worldIndex, justCompleted }: Props) {
         </button>
         <button className="btn white small menu-btn" onClick={() => nav({ name: 'home' })} title="Домик">
           <Icon name="home" />
-          <span className="hide-mobile">Домик</span>
+          <span className="hide-narrow">Домик</span>
         </button>
         <button className="btn white small menu-btn" onClick={() => nav({ name: 'shop' })} title="Магазин">
           <Icon name="shop" />
-          <span className="hide-mobile">Магазин</span>
+          <span className="hide-narrow">Магазин</span>
         </button>
         <button className="btn white small menu-btn" onClick={() => nav({ name: 'album' })} title="Альбом">
           <Icon name="album" />
-          <span className="hide-mobile">Альбом</span>
+          <span className="hide-narrow">Альбом</span>
         </button>
         <InstallButton />
         <button className="btn white small menu-btn" onClick={() => setGate(true)} title="Для родителей">
